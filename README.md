@@ -25,7 +25,8 @@ index.html                 kerangka (sidebar, navbar, tab bar)
 core.js                    aturan domain, dipakai juga oleh script Node
 src/styles/                tokens.css · base.css · layout.css · components.css
 src/app/main.js            entry: router, navigasi, event global, boot
-src/app/store.js           lapisan data (data.json, targets.json, budget.json), tanpa DOM
+src/app/store.js           lapisan data (data.json, targets.json, budget terkunci), tanpa DOM
+src/app/vault.js           buka secure/vault.json dengan password (PBKDF2 + AES-GCM, di browser)
 src/app/state.js           state UI (halaman, bulan, filter, tema)
 src/app/i18n.js            t(key), ganti bahasa
 src/app/locales/id.js|en.js  kamus teks
@@ -75,7 +76,15 @@ Catatan keamanan: URL web app bisa dipakai siapa saja yang tahu alamatnya. Scrip
 | Productivity | Admits ÷ Total MH per site per hari (Admits kosong = 0) |
 | Productivity Alert | site ter-flag kalau PKDW > 0 **dan** productivity < target − 1; warnings minggu ini = jumlah hari seperti itu dalam minggu fiskal berjalan (Rabu–Selasa) s.d. tanggal laporan |
 
-Budget DW per site per minggu (Sep–Des 2026) ada di `budget.json`, diambil dari **payroll.xlsx sheet PROD 14** (budget): `mh` = budget MH DW, `admits` = forecast admits, `prod` = target productivity, `fth` = jam karyawan tetap (FT × 40 × hari/7). Rumus budget DW di file itu: `max(0, admits ÷ (prod × 90%) − fth)`.
+Budget DW per site per minggu (Sep–Des 2026) **tidak disimpan terbuka di repo ini**. Datanya dikunci di `secure/vault.json`: satu bagian per password (Region 1–6 hanya berisi site region itu, Admin berisi semua). Password dimasukkan di halaman Budget vs Actual dan tidak pernah dikirim ke mana pun; budget yang sudah terbuka hanya disimpan di tab itu (sessionStorage) dan terkunci lagi saat tab ditutup.
+
+Mengunci ulang (setelah budget berubah atau password diganti), dari salinan pribadi di luar repo:
+
+```
+node scripts/seal-budget.mjs /path/pribadi/budget.json /path/pribadi/passwords.json
+```
+
+`passwords.json` = `{"REGION 1": "...", ..., "REGION 6": "...", "ADMIN": "..."}`. Isi budget aslinya diambil dari **payroll.xlsx sheet PROD 14** (budget): `mh` = budget MH DW, `admits` = forecast admits, `prod` = target productivity, `fth` = jam karyawan tetap (FT × 40 × hari/7). Rumus budget DW di file itu: `max(0, admits ÷ (prod × 90%) − fth)`.
 
 Target productivity (12 atau 14) dan region setiap site ada di `targets.json`, disalin dari laporan DailyWorker_Productivity. Untuk menambah site baru (mis. 72-Paragon Square Mall), tambahkan entri dengan kode site-nya.
 

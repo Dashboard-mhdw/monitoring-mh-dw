@@ -1,17 +1,20 @@
 // Data layer — loads the static JSON files and exposes domain queries.
 // No DOM, no strings: views decide how to present what this returns.
 import { TODAY, isoOf } from "./format.js";
+import * as Vault from "./vault.js";
 
 const Core = globalThis.MHCore;
 const bust = () => "?t=" + Date.now();
 
-let DATA = null, TARGETS = null, BUDGET = null;
+let DATA = null, TARGETS = null, BUDGET = null, ACCESS = null;  // ACCESS = {scope:"ALL"|"REGION n", label}
 let cache = {};
 
 export const store = {
   get generatedAt() { return DATA && DATA.generatedAt ? new Date(DATA.generatedAt).getTime() : null; },
   get targets() { return TARGETS; },
   get budget() { return BUDGET; },
+  /** Who unlocked the budget: {scope, label}, or null while locked. */
+  get access() { return ACCESS; },
   /** Month keys (YYYY-MM), newest first. */
   months() { return Object.keys((DATA && DATA.months) || {}).sort().reverse(); },
   has(key) { return !!(DATA && DATA.months && DATA.months[key]); },
@@ -25,10 +28,8 @@ async function getJson(path, required) {
 
 export async function loadAll() {
   DATA = await getJson("data.json", true);
-  [TARGETS, BUDGET] = await Promise.all([
-    getJson("targets.json").catch(() => null),
-    getJson("budget.json").catch(() => null),
-  ]);
+  TARGETS = await getJson("targets.json").catch(() => null);
+  setAccess(Vault.restore());
   cache = {};
 }
 
@@ -60,10 +61,34 @@ export function alertsOn(iso) {
   return Core.prodAlerts(k => ms[k] || null, iso, TARGETS || {});
 }
 
-/** Budget vs actual for a month up to a cut-off date. */
+function setAccess(p) {
+  BUDGET = p ? p.budget : null;
+  ACCESS = p ? {scope: p.scope, label: p.label} : null;
+}
+
+/** Unlock the budget with a region/admin password. Resolves true when it matched. */
+export async function unlockBudget(password) {
+  const p = await Vault.unlock(password);
+  if (p) setAccess(p);
+  return !!p;
+}
+
+export function lockBudget() { Vault.forget(); setAccess(null); }
+
+/** Site codes visible to the current password (null = all). */
+export function scopeCodes() {
+  if (!ACCESS || ACCESS.scope === "ALL") return null;
+  const T = (TARGETS && TARGETS.sites) || {};
+  return new Set(Object.keys(T).filter(c => T[c].region === ACCESS.scope));
+}
+
+/** Budget vs actual for a month up to a cut-off date, limited to the unlocked region. */
 export function budgetVsActual(key, cut) {
   const g = getMonth(key);
-  return g && BUDGET ? Core.budgetVsActual(g.m, BUDGET, cut) : null;
+  if (!g || !BUDGET) return null;
+  const codes = scopeCodes();
+  const m = codes ? {...g.m, rows: g.m.rows.filter(r => codes.has(r.code))} : g.m;
+  return Core.budgetVsActual(m, BUDGET, cut);
 }
 
 /** PKDW per site across months, for the trend view. */

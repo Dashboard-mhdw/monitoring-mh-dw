@@ -337,3 +337,15 @@ table.dmx td.low{color:var(--red-text);font-weight:700}
   #dSort,#dRegion{flex:1 1 40%}
   table.dmx .dsite span{display:none}
 }
+
+/* Budget lock screen */
+.lock-card{max-width:420px;margin:var(--s5) auto;display:grid;gap:var(--s3);justify-items:center;text-align:center;padding:var(--s6) var(--s5)}
+.lock-card h2{margin:0}
+.lock-card p{margin:0}
+.lock-icon{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--fill);color:var(--blue)}
+.lock-icon svg{width:26px;height:26px}
+.lock-input{width:100%;font-size:var(--t-body);padding:11px 14px;text-align:center}
+.lock-card .btn{width:100%;justify-content:center}
+.lock-msg{min-height:1.2em;font-size:var(--t-subhead);color:var(--label-2)}
+.lock-msg.bad{color:var(--red-text)}
+.tag svg{width:12px;height:12px;margin-right:4px;vertical-align:-1px}

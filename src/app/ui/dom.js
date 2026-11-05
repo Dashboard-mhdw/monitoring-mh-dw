@@ -54,6 +54,7 @@ export function initTooltip() {
 
 const svg = (body, sw = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 export const ICON = {
+  lock: svg('<rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 018 0v3"/>', 1.9),
   check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 2.6),
   down: svg('<path d="M12 4v12M6.5 11l5.5 5.5 5.5-5.5M5 20h14"/>', 2.2),
   copy: svg('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>'),

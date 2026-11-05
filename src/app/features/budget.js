@@ -6,7 +6,7 @@ import * as Mail from "./budget-mail.js";
 import { header, kpi, kpis, notice, segmented, btn, tag, legend } from "../ui/components.js";
 import { groupedChart } from "../ui/charts.js";
 import { openSheet } from "../ui/sheet.js";
-import { budgetVsActual, store } from "../store.js";
+import { budgetVsActual, store, unlockBudget, lockBudget } from "../store.js";
 import { state } from "../state.js";
 import { reasonBtn, reasonSection } from "./reasons.js";
 
@@ -65,15 +65,46 @@ function openBudgetSite(r, code) {
     reasonSection({site: x.code, cinema: x.cinema, date: r.cut, month: r.month, context: x.status === "over" ? "over" : x.status === "nobudget" || x.status === "early" ? "nobudget" : "other"})});
 }
 
+function wireLock(c, app) {
+  on(c, "#bvLock", "click", () => { lockBudget(); app.rerender(); });
+}
+
+/** Password screen shown while the budget is locked. */
+function renderLock(c, app, title, sub) {
+  c.innerHTML = header(title, sub) + `
+    <form class="card lock-card" id="lockForm" autocomplete="off">
+      <div class="lock-icon">${ICON.lock}</div>
+      <h2>${t("lock.title")}</h2>
+      <p class="muted">${t("lock.sub")}</p>
+      <input type="password" id="lockPw" class="datefield lock-input" placeholder="${t("lock.placeholder")}" aria-label="${t("lock.placeholder")}" autocomplete="current-password">
+      <p class="lock-msg" id="lockMsg" role="status"></p>
+      <button type="submit" class="btn filled" id="lockGo">${t("lock.open")}</button>
+      <p class="foot">${t("lock.note")}</p>
+    </form>`;
+  const form = c.querySelector("#lockForm"), inp = c.querySelector("#lockPw"), msg = c.querySelector("#lockMsg"), go = c.querySelector("#lockGo");
+  inp.focus();
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    if (!inp.value.trim()) return;
+    go.disabled = true; msg.className = "lock-msg"; msg.textContent = t("lock.checking");
+    try {
+      if (await unlockBudget(inp.value)) { app.rerender(); return; }
+      msg.className = "lock-msg bad"; msg.textContent = t("lock.wrong"); inp.select();
+    } catch (e) { msg.className = "lock-msg bad"; msg.textContent = t("lock.error"); }
+    go.disabled = false;
+  });
+}
+
 export default {
   id: "budget",
   render(c, app) {
     const key = state.month, cut = cutFor(key), title = t("nav.budget");
     const tools = `<label class="muted" for="bvCut" style="font-size:var(--t-subhead)">${t("budget.until")}</label><input type="date" class="datefield" id="bvCut" value="${cut}" min="${key}-01" max="${monthEnd(key)}">`;
     const wireCut = () => on(c, "#bvCut", "change", el => { if (el.value) { state.budgetCut = el.value; app.rerender(); } });
-    if (!store.budget) { c.innerHTML = header(title, monthName(key)) + notice(t("budget.noFile"), t("budget.noFileSub")); return; }
+    if (!store.budget) { renderLock(c, app, title, monthName(key)); return; }
+    const who = store.access ? `<span class="tag ${store.access.scope === "ALL" ? "green" : ""}">${ICON.lock}${esc(store.access.label)}</span>` + btn(t("lock.lockBtn"), {id: "bvLock"}) : "";
     const r = budgetVsActual(key, cut);
-    if (!r) { c.innerHTML = header(title, monthName(key), tools) + notice(t("budget.noMonth", {month: monthName(key)}), t("budget.noMonthSub")); wireCut(); return; }
+    if (!r) { c.innerHTML = header(title, monthName(key), who + tools) + notice(t("budget.noMonth", {month: monthName(key)}), t("budget.noMonthSub")); wireCut(); wireLock(c, app); return; }
 
     const T = r.tot, A = r.hasAdmits, flt = state.budgetFilter || "active";
     const match = x => flt === "active" ? x.status !== "none" : flt === "all" ? true : flt === "ok" ? (x.status === "ok" || x.status === "near")
@@ -85,7 +116,7 @@ export default {
     const sumOf = k => fmt(list.reduce((a, x) => a + (x[k] || 0), 0));
 
     c.innerHTML = header(title, t("budget.sub", {month: monthName(key), date: dateLong(r.cut)}),
-        tools + btn(t("budget.copy"), {id: "bvCopy", icon: ICON.copy}) + btn(t("common.downloadExcel"), {act: "budget-xlsx", filled: true, icon: ICON.down})) +
+        who + tools + btn(t("budget.copy"), {id: "bvCopy", icon: ICON.copy}) + btn(t("common.downloadExcel"), {act: "budget-xlsx", filled: true, icon: ICON.down})) +
       kpis(
         kpi({label: t("budget.kpiActual", {d: +r.cut.slice(8), m: monthOnly(key).slice(0, 3)}), tone: "hero", value: fmt(T.actual), unit: "/ " + fmt(T.budgetToDate) + " MH", sub: `<span class="delta ${T.usage > 1 ? "bad" : ""}">${t("budget.pctOf", {p: fmt((T.usage || 0) * 100)})}</span> ${t("budget.varV", {v: signed(T.variance)})}`}),
         kpi({label: t("budget.kpiMonth", {m: monthOnly(key)}), icon: ICON.calendar, tint: "indigo", value: fmt(T.budgetMonth), unit: "MH", sub: t("budget.kpiMonthSub", {v: `<b style="color:${T.remaining < 0 ? "var(--red-text)" : "inherit"}">${fmt(T.remaining)}</b>`})}),
@@ -107,12 +138,12 @@ export default {
         <tfoot><tr><td>${t("budget.totalRow", {n: list.length})}</td>${(A ? ["admitsBudgetToDate", "admitsActual", null, "budgetToDate", "actual", "variance"] : ["budgetToDate", "actual", "variance"]).map(k => `<td class="r">${k ? sumOf(k) : ""}</td>`).join("")}<td></td><td class="r">${fmt(list.reduce((a, x) => a + x.remaining, 0))}</td><td></td><td></td></tr></tfoot>
       </table></div>
       <p class="foot">${t("budget.foot")} ${t("budget.source", {s: esc(store.budget.source || "budget.json")})}</p>
-      <div class="row" style="margin-top:var(--s4)"><h2 class="section-head" style="margin:0">${t("budget.mailTitle")}</h2><span class="spacer"></span>
+      ${store.access && store.access.scope !== "ALL" ? "" : `<div class="row" style="margin-top:var(--s4)"><h2 class="section-head" style="margin:0">${t("budget.mailTitle")}</h2><span class="spacer"></span>
         ${btn(t("budget.copySubject"), {id: "bmSubj", icon: ICON.copy})}${btn(t("budget.copyMail"), {id: "bmCopy", filled: true, icon: ICON.copy})}</div>
       <p class="foot" style="margin-top:-8px">${t("budget.mailNote")}</p>
-      <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(Mail.subject(r))}</p>${Mail.mailHTML(r)}</div>`;
+      <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(Mail.subject(r))}</p>${Mail.mailHTML(r)}</div>`}`;
 
-    wireCut();
+    wireCut(); wireLock(c, app);
     on(c, "[data-bf]", "click", b => { state.budgetFilter = b.dataset.bf; app.rerender(); });
     on(c, "[data-bsite]", "click", row => openBudgetSite(r, row.dataset.bsite));
     on(c, "#bvCopy", "click", () => copyText(summaryText(r), t("budget.copied")));

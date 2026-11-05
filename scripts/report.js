@@ -5,7 +5,7 @@ const path = require("path");
 const C = require(path.join(__dirname, "..", "core.js"));
 const data = require(path.join(__dirname, "..", "data.json"));
 let cfg = {}; try{ cfg = require(path.join(__dirname, "..", "targets.json")); }catch(e){}
-let budget = null; try{ budget = require(path.join(__dirname, "..", "budget.json")); }catch(e){}
+let budget = null; try{ budget = require(process.env.MHDW_BUDGET || path.join(__dirname, "..", "budget.json")); }catch(e){}  // budget.json is not in the repo any more (sealed in secure/vault.json); pass MHDW_BUDGET=/path to a private copy
 const nowJkt = new Date(Date.now() + 7*3600e3).toISOString().slice(0,10);
 const date = process.argv[2] || C.isoAdd(nowJkt, -1);
 const cache = {}; const getMonth = k => data.months[k] ? (cache[k] = cache[k] || C.unpack(data.months[k])) : null;
