@@ -2,7 +2,7 @@
 import { t } from "../i18n.js";
 import { fmt, f1, dateLong, YESTERDAY } from "../format.js";
 import { esc, ICON, on } from "../ui/dom.js";
-import { header, kpi, kpis, segmented, legend } from "../ui/components.js";
+import { segmented, legend } from "../ui/components.js";
 import { mapBox, mountMap } from "../ui/map.js";
 import { alertsRange, missingOn, store } from "../store.js";
 import { state } from "../state.js";
@@ -38,19 +38,19 @@ export default {
     });
 
     const nFlag = flagged.size, nMiss = missing.size;
-    c.innerHTML = header(t("nav.check"), t("check.sub")) +
-      kpis(
-        kpi({label: t("check.kFlag"), icon: ICON.warn, tint: "red", tone: nFlag ? "bad" : "good", value: nFlag, unit: t("unit.sites"), sub: from === to ? dateLong(to) : `${dateLong(from)} – ${dateLong(to)}`}),
-        kpi({label: t("check.kMiss"), icon: ICON.checklist, tint: "orange", tone: nMiss ? "warn" : "good", value: nMiss, unit: t("unit.sites"), sub: dateLong(state.h1Date)}),
-        kpi({label: t("check.kDw"), icon: ICON.person, value: fmt([...flagged.values()].flat().reduce((x, r) => x + r.pkdw, 0) + [...users.values()].reduce((x, r) => x + r.pkdw, 0)), unit: "MH", sub: t("check.kDwSub", {n: flagged.size + users.size})}),
-      ) + `
-      <div class="row">${segmented("ctab", tab, [["alert", `${t("check.tAlert")} (${nFlag})`], ["h1", `${t("check.tH1")} (${nMiss})`]], t("nav.check"))}</div>
-      <div class="card mapcard"><div class="card-head"><h2>${tab === "alert" ? t("check.mapAlert") : t("check.mapH1")}</h2>${legend(tab === "alert"
-        ? [["var(--red)", t("check.lgFlag")], ["var(--green)", t("check.lgOk")], ["var(--label-3)", t("check.lgNoDw")]]
-        : [["var(--orange)", t("check.lgMiss")], ["var(--green)", t("check.lgFilled")]])}</div>${mapBox("checkMap", 360)}</div>
-      <div class="subpage" id="checkSub"></div>`;
+    // The full Productivity Alert / Cek H-1 page (date filter, table, email reminder) stays the main content;
+    // this page only adds the tab switch on top and the map under its summary tiles.
+    c.innerHTML = `<div class="subpage" id="checkSub"></div>`;
     const sub = c.querySelector("#checkSub");
     (tab === "alert" ? alertView : h1View).render(sub, app);
+    const tabs = `<div class="row ctabs">${segmented("ctab", tab, [["alert", `${t("check.tAlert")} (${nFlag})`], ["h1", `${t("check.tH1")} (${nMiss})`]], t("nav.check"))}</div>`;
+    const head = sub.querySelector(".large-title");
+    if (head) head.insertAdjacentHTML("afterend", tabs); else sub.insertAdjacentHTML("afterbegin", tabs);
+    const card = `<div class="card mapcard"><div class="card-head"><h2>${tab === "alert" ? t("check.mapAlert") : t("check.mapH1")}</h2>${legend(tab === "alert"
+        ? [["var(--red)", t("check.lgFlag")], ["var(--green)", t("check.lgOk")], ["var(--map-pin-off)", t("check.lgNoDw")]]
+        : [["var(--orange)", t("check.lgMiss")], ["var(--green)", t("check.lgFilled")]])}</div>${mapBox("checkMap", 400)}<p class="foot" style="margin:0">${t("check.mapFoot")}</p></div>`;
+    const anchor = sub.querySelector(".kpis") || sub.querySelector(".ctabs");
+    anchor.insertAdjacentHTML("afterend", card);
     on(c, "[data-ctab]", "click", b => { state.checkTab = b.dataset.ctab; app.rerender(); });
     mountMap(c.querySelector("#checkMap"), points);
   },

@@ -78,7 +78,7 @@ export default {
           ${chart}
           <p class="foot" style="margin:0">${t("ov.dailyFoot", {avg: fmt(avg), n: st.lastIdx + 1})}</p>
         </div>
-        <div class="card mapcard"><div class="card-head"><h2>${t("ov.mapTitle")}</h2>${legend([["var(--red)", t("ov.lgHigh")], ["var(--orange)", t("ov.lgMid")], ["var(--blue)", t("ov.lgLow")], ["var(--label-3)", t("ov.lgNone")]])}</div>${mapBox("ovMap", 330)}</div>
+        <div class="card mapcard"><div class="card-head"><h2>${t("ov.mapTitle")}</h2>${legend([["var(--red)", t("ov.lgHigh")], ["var(--orange)", t("ov.lgMid")], ["var(--blue)", t("ov.lgLow")], ["var(--map-pin-off)", t("ov.lgNone")]])}</div>${mapBox("ovMap", 330)}</div>
       </div>
       <div class="grid-2">
         <div class="card">
