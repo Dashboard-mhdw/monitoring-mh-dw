@@ -357,3 +357,28 @@ body.locked .content{display:grid;place-items:start center;padding-top:8vh}
 .lock-msg{min-height:1.2em;font-size:var(--t-subhead);color:var(--label-2)}
 .lock-msg.bad{color:var(--red-text)}
 .tag svg{width:12px;height:12px;margin-right:4px;vertical-align:-1px}
+
+/* Budget & Sisa */
+.bhero{gap:var(--s3)}
+.bh-top{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
+.bh-k{font-size:var(--t-subhead);color:var(--label-2);font-weight:600}
+.bh-v{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bh-v b{font-family:var(--font-round);font-size:40px;letter-spacing:-.02em;color:var(--blue-text);font-variant-numeric:tabular-nums}
+.bh-v span{color:var(--label-2);font-size:var(--t-callout)}
+.bh-s{margin:0;color:var(--label-2);font-size:var(--t-subhead)}
+.bprog{position:relative;height:10px;border-radius:5px;background:var(--fill);overflow:visible}
+.bprog i{display:block;height:100%;border-radius:5px;max-width:100%}
+.bprog b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--label);opacity:.55;border-radius:1px;transform:translateX(-1px)}
+.bprog.big{height:14px;border-radius:7px} .bprog.big i{border-radius:7px}
+.bprog.sm{height:7px;width:110px;display:inline-block;vertical-align:middle}
+.ctl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--s3)}
+.ctl-grid div{display:grid;gap:2px} .ctl-grid span{font-size:var(--t-footnote);color:var(--label-2)} .ctl-grid b{font-size:20px;font-variant-numeric:tabular-nums}
+.rcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--s3)}
+.rcard{all:unset;cursor:pointer;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);padding:var(--s4);display:grid;gap:8px;transition:box-shadow .15s}
+.rcard:hover{box-shadow:var(--shadow-pop,var(--shadow))} .rcard.on{outline:2px solid var(--blue)}
+.rcard:focus-visible{outline:2px solid var(--blue)}
+.rc-h{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.rc-v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums} .rc-v small{font-size:13px;color:var(--label-2);font-weight:600}
+.rc-s{font-size:var(--t-footnote);color:var(--label-2)}
+.btable td.site .sub{display:block;font-size:var(--t-footnote);font-weight:400}
+@media (max-width:640px){.bh-v b{font-size:30px}.bprog.sm{width:70px}}

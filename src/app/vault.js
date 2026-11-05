@@ -1,9 +1,9 @@
 // Password access. secure/vault.json holds one entry per password (6 regions + admin), each locked with
-// PBKDF2-SHA256 → AES-GCM. An unlocked entry gives {scope, label, key (private ECDH key), budget}.
-// The data itself lives in secure/m/<YYYY-MM>/<all|r1..r6>.json, sealed to that scope's public key by
-// scripts/seal-data.mjs. The password never leaves the browser; the unlocked entry stays in sessionStorage
+// PBKDF2-SHA256 → AES-GCM. An unlocked entry gives {scope, label, key (private ECDH key)}.
+// Data lives in secure/m/<YYYY-MM>/<all|r1..r6>.json (scripts/seal-data.mjs) and budgets in
+// secure/b/<YYYY-MM>/<all|r1..r6>.json (scripts/seal-budget.mjs), each sealed to that scope's public key. The password never leaves the browser; the unlocked entry stays in sessionStorage
 // only, so closing the tab locks the dashboard again. Built by scripts/seal-vault.mjs.
-const KEY = "mhdw.vault.v2";
+const KEY = "mhdw.vault.v3";
 const un64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const ECDH = {name: "ECDH", namedCurve: "P-256"};
 const getJson = async path => { const r = await fetch(path + "?t=" + Date.now(), {cache: "no-store"}); if (!r.ok) throw new Error(path + " " + r.status); return r.json(); };
@@ -44,15 +44,17 @@ async function open(privKey, sealed) {
   return JSON.parse(new TextDecoder().decode(pt));
 }
 
-/** Load every month this entry may see → the same shape as the old data.json. */
+/** Load every month (and every budget month) this entry may see.
+ *  → {data: {generatedAt, source, months}, budget: {byMonth: {YYYY-MM: {...}}} | null} */
 export async function loadData(entry) {
   const idx = await getJson("secure/index.json");
   const priv = await crypto.subtle.importKey("jwk", entry.key, ECDH, false, ["deriveKey"]);
-  const s = slug(entry.scope), months = {};
-  await Promise.all((idx.months || []).map(async k => {
-    try { months[k] = await open(priv, await getJson(`secure/m/${k}/${s}.json`)); }
-    catch (e) { console.warn("month", k, e); }
+  const s = slug(entry.scope), months = {}, byMonth = {};
+  const grab = (list, dir, into) => Promise.all((list || []).map(async k => {
+    try { into[k] = await open(priv, await getJson(`secure/${dir}/${k}/${s}.json`)); }
+    catch (e) { console.warn(dir, k, e); }
   }));
+  await Promise.all([grab(idx.months, "m", months), grab(idx.budgetMonths, "b", byMonth)]);
   if (!Object.keys(months).length) throw {code: "locked_stale", message: "no month could be opened"};
-  return {generatedAt: idx.generatedAt, source: idx.source, months};
+  return {data: {generatedAt: idx.generatedAt, source: idx.source, months}, budget: Object.keys(byMonth).length ? {byMonth} : null};
 }

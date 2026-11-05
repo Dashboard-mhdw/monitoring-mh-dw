@@ -86,20 +86,24 @@ Cara kerjanya:
 | File | Isi |
 |---|---|
 | `secure/keys.json` | kunci publik tiap region + admin (aman dibagikan) |
-| `secure/vault.json` | kunci privat + budget tiap region/admin, masing-masing dikunci password-nya (PBKDF2-SHA256 → AES-GCM) |
+| `secure/vault.json` | kunci privat tiap region/admin, masing-masing dikunci password-nya (PBKDF2-SHA256 → AES-GCM) |
 | `secure/m/<YYYY-MM>/<all\|r1..r6>.json` | data harian per bulan, dikunci ke kunci publik scope itu (ECDH P-256 + AES-GCM) |
+| `secure/b/<YYYY-MM>/<all\|r1..r6>.json` | budget per bulan (MH, Rp, rate, FT, forecast admits, alokasi per minggu) dari spreadsheet budget, dikunci sama seperti data |
 | `secure/index.json` | daftar bulan dan waktu update (tanpa data site) |
 
 Update otomatis (`scripts/UPDATE.md`) hanya butuh kunci publik, jadi tidak perlu tahu password. `data.json` dan `budget.json` hanya ada lokal (di-.gitignore).
 
-**Ganti password / budget berubah** — dari salinan pribadi di luar repo, dengan `data.json` lengkap (semua bulan):
+**Budget** dibaca dari spreadsheet budget (sheet *Budget per cinema* + *Alokasi per Week*) oleh `scripts/build-budget.mjs`, lalu dikunci per region oleh `scripts/seal-budget.mjs`. Ini ikut berjalan di update otomatis.
+
+**Ganti password** — dari salinan pribadi di luar repo, dengan `data.json` lengkap (semua bulan):
 
 ```
-node scripts/seal-vault.mjs /path/pribadi/budget.json /path/pribadi/passwords.json   # kunci baru + vault baru
-node scripts/seal-data.mjs /path/pribadi/data.json                                  # kunci ulang semua bulan
+node scripts/seal-vault.mjs /path/pribadi/passwords.json        # kunci baru + vault baru
+node scripts/seal-data.mjs /path/pribadi/data.json             # kunci ulang semua bulan data
+node scripts/seal-budget.mjs /path/pribadi/budget-*.json       # kunci ulang semua bulan budget
 ```
 
-`passwords.json` = `{"REGION 1": "...", ..., "REGION 6": "...", "ADMIN": "..."}`. Isi budget aslinya diambil dari **payroll.xlsx sheet PROD 14** (budget): `mh` = budget MH DW, `admits` = forecast admits, `prod` = target productivity, `fth` = jam karyawan tetap (FT × 40 × hari/7). Rumus budget DW di file itu: `max(0, admits ÷ (prod × 90%) − fth)`.
+`passwords.json` = `{"REGION 1": "...", ..., "REGION 6": "...", "ADMIN": "..."}`. Budget Sep, Okt, dan Des 2026 masih dari **payroll.xlsx sheet PROD 14**; mulai Nov 2026 dari spreadsheet budget.
 
 Target productivity (12 atau 14) dan region setiap site ada di `targets.json`, disalin dari laporan DailyWorker_Productivity. Untuk menambah site baru (mis. 72-Paragon Square Mall), tambahkan entri dengan kode site-nya.
 

@@ -30,9 +30,11 @@ export async function loadAll() {
   TARGETS = await getJson("targets.json").catch(() => null);
   const entry = Vault.restore();
   if (!entry) { DATA = null; setAccess(null); throw {code: "locked"}; }
-  try { DATA = await Vault.loadData(entry); }
+  let got;
+  try { got = await Vault.loadData(entry); }
   catch (e) { if (e && e.code === "locked_stale") { Vault.forget(); setAccess(null); throw {code: "locked"}; } throw e; }
-  setAccess(entry);
+  DATA = got.data;
+  setAccess(entry, got.budget);
   cache = {};
 }
 
@@ -64,8 +66,8 @@ export function alertsOn(iso) {
   return Core.prodAlerts(k => ms[k] || null, iso, TARGETS || {});
 }
 
-function setAccess(p) {
-  BUDGET = p ? p.budget : null;
+function setAccess(p, budget = null) {
+  BUDGET = p ? budget : null;
   ACCESS = p ? {scope: p.scope, label: p.label} : null;
 }
 
@@ -87,8 +89,31 @@ export function budgetVsActual(key, cut) {
   const g = getMonth(key);
   if (!g || !BUDGET) return null;
   const codes = scopeCodes();
+  const b = BUDGET.byMonth && BUDGET.byMonth[key];
+  if (!b) return null;
   const m = codes ? {...g.m, rows: g.m.rows.filter(r => codes.has(r.code))} : g.m;
-  return Core.budgetVsActual(m, BUDGET, cut);
+  const r = Core.budgetVsActual(m, b, cut);
+  if (r) enrichAmounts(r, b);
+  return r;
+}
+
+/** Add Rupiah, FT, rate and region to a budget-vs-actual result (rate = Rp per MH DW from the budget sheet). */
+function enrichAmounts(r, b) {
+  const S = b.sites || {}, T = (TARGETS && TARGETS.sites) || {};
+  r.rows.forEach(x => {
+    const s = S[x.code] || {};
+    x.rate = s.rate || 0; x.ft = s.ft || 0; x.nobar = s.nobar || 0;
+    x.region = (T[x.code] && T[x.code].region) || s.region || "";
+    x.target = (T[x.code] && T[x.code].target) || s.prod || null;
+    x.amountMonth = s.amountMonth != null ? s.amountMonth : x.budgetMonth * x.rate;
+    x.amountActual = x.actual * x.rate;
+    x.amountToDate = x.budgetToDate * x.rate;
+    x.amountRemaining = x.amountMonth - x.amountActual;
+  });
+  const sum = k => r.rows.reduce((a, x) => a + (x[k] || 0), 0);
+  Object.assign(r.tot, {amountMonth: sum("amountMonth"), amountActual: sum("amountActual"), amountToDate: sum("amountToDate"), amountRemaining: sum("amountRemaining"), ft: sum("ft")});
+  r.control = b.control || {};
+  r.source = b.source || "";
 }
 
 /** PKDW per site across months, for the trend view. */

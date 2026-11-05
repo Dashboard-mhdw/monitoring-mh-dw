@@ -19,7 +19,8 @@ export const state = {
   alertDate: YESTERDAY,          // "sampai"
   alertFrom: defaultAlertFrom(),  // "dari" — on Monday: Friday, so the weekend is covered
   alertMode: "flagged",
-  alertMailRegion: "",            // "" = one email to all regions; "REGION n" = only that region (admin)
+  alertMailRegion: "",
+  budgetRegion: "",               // admin: region card selected on the Budget page            // "" = one email to all regions; "REGION n" = only that region (admin)
   siteFilter: "all",
   q: "",
   perFormat: false,
