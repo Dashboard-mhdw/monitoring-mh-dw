@@ -1,4 +1,4 @@
-// Data layer — loads the static JSON files and exposes domain queries.
+// Data layer — unlocks the sealed data (see vault.js) and exposes domain queries.
 // No DOM, no strings: views decide how to present what this returns.
 import { TODAY, isoOf } from "./format.js";
 import * as Vault from "./vault.js";
@@ -27,9 +27,12 @@ async function getJson(path, required) {
 }
 
 export async function loadAll() {
-  DATA = await getJson("data.json", true);
   TARGETS = await getJson("targets.json").catch(() => null);
-  setAccess(Vault.restore());
+  const entry = Vault.restore();
+  if (!entry) { DATA = null; setAccess(null); throw {code: "locked"}; }
+  try { DATA = await Vault.loadData(entry); }
+  catch (e) { if (e && e.code === "locked_stale") { Vault.forget(); setAccess(null); throw {code: "locked"}; } throw e; }
+  setAccess(entry);
   cache = {};
 }
 
@@ -66,14 +69,11 @@ function setAccess(p) {
   ACCESS = p ? {scope: p.scope, label: p.label} : null;
 }
 
-/** Unlock the budget with a region/admin password. Resolves true when it matched. */
-export async function unlockBudget(password) {
-  const p = await Vault.unlock(password);
-  if (p) setAccess(p);
-  return !!p;
-}
+/** Unlock the dashboard with a region/admin password. Resolves true when it matched (data loads on the next loadAll). */
+export async function unlock(password) { return !!(await Vault.unlock(password)); }
 
-export function lockBudget() { Vault.forget(); setAccess(null); }
+/** Lock again: forget the password entry and all data in memory. */
+export function lock() { Vault.forget(); setAccess(null); DATA = null; cache = {}; }
 
 /** Site codes visible to the current password (null = all). */
 export function scopeCodes() {

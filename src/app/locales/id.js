@@ -11,10 +11,10 @@ export default {
   "aria.nav": "Navigasi", "aria.tabs": "Tab", "aria.month": "Pilih bulan",
   "nav.gMonitor": "Monitoring", "nav.gReports": "Laporan",
   "nav.overview": "Ringkasan", "nav.h1": "Cek Pengisian H-1", "nav.alert": "Productivity Alert",
-  "nav.sites": "PKDW 59 Site", "nav.budget": "Budget vs Actual", "nav.trend": "Tren Bulanan",
+  "nav.sites": "PKDW per Site", "nav.budget": "Budget vs Actual", "nav.trend": "Tren Bulanan",
   "nav.map": "Peta Pengisian", "nav.more": "Lainnya",
   "nav.sheet": "Buka spreadsheet",
-  "tab.overview": "Ringkasan", "tab.h1": "H-1", "tab.alert": "Alert", "tab.sites": "59 Site", "tab.more": "Lainnya",
+  "tab.overview": "Ringkasan", "tab.h1": "H-1", "tab.alert": "Alert", "tab.sites": "Site", "tab.more": "Lainnya",
   "side.source": "Sumber: “Man Hour Usage”, diperbarui otomatis tiap hari.",
   "side.stamp": "Data diambil dari “Man Hour Usage” pada {t}. Diperbarui otomatis tiap hari.",
   "more.reports": "Laporan", "more.settings": "Pengaturan", "more.language": "Bahasa", "more.theme": "Tampilan",
@@ -44,7 +44,7 @@ export default {
   "ov.sub": "{month} · data terisi sampai {last}",
   "ov.download": "Unduh laporan bulanan",
   "ov.vsFirstDays": "vs {n} hari pertama {month}",
-  "ov.kpiTotal": "Total pemakaian PKDW · 59 site",
+  "ov.kpiTotal": "Total pemakaian PKDW · semua site",
   "ov.kpiSites": "Site memakai DW", "ov.kpiSitesSub": "{n} site tanpa DW bulan ini",
   "ov.kpiAvg": "Rata-rata per hari", "ov.kpiAvgSub": "dari {n} hari ber-data",
   "ov.kpiShare": "Porsi DW dari total MH", "ov.kpiShareSub": "Total MH {total} · PKWT {pkwt}",
@@ -53,7 +53,7 @@ export default {
   "ov.filling": "Pengisian", "ov.mapLink": "Peta",
   "ov.compliance": "Kepatuhan isi bulan ini", "ov.complianceSub": "{m} dari {s} slot (baris × hari) belum terisi s.d. kemarin",
   "ov.h1Missing": "{n} site belum isi kemarin", "ov.h1AllDone": "Semua sudah isi kemarin", "ov.h1Tap": "ketuk untuk reminder",
-  "ov.top10": "10 site PKDW tertinggi", "ov.allSites": "Lihat 59 site",
+  "ov.top10": "10 site PKDW tertinggi", "ov.allSites": "Lihat semua site",
   "ov.tipTop": "PKDW {v} MH · {d} hari pakai DW", "ov.tipShare": "Porsi DW {p}",
 
   // H-1
@@ -66,7 +66,7 @@ export default {
   "h1.reminderTitle": "Teks reminder",
   "h1.reminderLang": "Teks reminder mengikuti bahasa yang dipilih. Ganti ke English di pojok kanan atas kalau perlu versi Inggris.",
   "h1.reminder": "Selamat pagi rekan-rekan Cinema,\n\nMohon bantuannya untuk melengkapi pengisian Man Hour tanggal {date} pada link berikut:\n{url}\n\nCinema yang belum mengisi:\n{list}\n\nTerima kasih 🙏",
-  "h1.allDone": "Semua sudah mengisi", "h1.allDoneSub": "{n} baris dari 59 site lengkap untuk {date}.",
+  "h1.allDone": "Semua sudah mengisi", "h1.allDoneSub": "{n} baris lengkap untuk {date}.",
 
   // Alert
 
@@ -120,7 +120,12 @@ export default {
   // Budget
   "bstat.over": "Over budget", "bstat.nobudget": "Tanpa budget", "bstat.early": "Pakai sebelum jadwal",
   "bstat.near": "Mendekati (≥90%)", "bstat.ok": "Dalam budget", "bstat.none": "Tidak pakai",
-  "lock.title": "Budget terkunci", "lock.sub": "Masukkan password region kamu untuk melihat budget, sisa MH DW, dan pemakaian per site.", "lock.placeholder": "Password", "lock.open": "Buka budget", "lock.checking": "Memeriksa…", "lock.wrong": "Password tidak cocok. Cek lagi huruf besar/kecil dan tanda hubungnya.", "lock.error": "Gagal memuat data terkunci. Coba refresh halaman.", "lock.note": "Password dari tim Operation pusat. Budget otomatis terkunci lagi saat tab ditutup.", "lock.lockBtn": "Kunci",
+  "lock.loading": "Membuka data…",
+  "lock.signOut": "Keluar",
+  "budget.noBudget": "Belum ada data budget",
+  "budget.noBudgetSub": "Data budget untuk akses ini belum tersedia.",
+  "alert.mailAll": "Semua region", "alert.mailFor": "Email untuk",
+  "lock.sub": "Masukkan password region kamu. Setiap password hanya menampilkan site di region itu.", "lock.placeholder": "Password", "lock.open": "Masuk", "lock.checking": "Memeriksa…", "lock.wrong": "Password tidak cocok. Cek lagi huruf besar/kecil dan tanda hubungnya.", "lock.error": "Gagal memuat data terkunci. Coba refresh halaman.", "lock.note": "Password dari tim Operation pusat. Dashboard otomatis terkunci lagi saat tab ditutup.",
   "budget.until": "s.d.", "budget.week": "Minggu", "budget.dates": "Tanggal",
   "budget.toDate": "s.d. tgl", "budget.notStarted": "belum berjalan", "budget.notYet": "belum",
   "budget.noMonth": "Belum ada budget untuk {month}", "budget.noMonthSub": "Pilih bulan lain di kanan atas, atau minta admin menambahkan budget bulan ini.",
@@ -153,12 +158,12 @@ export default {
   // Exports
   "x.code": "Kode", "x.avgDw": "Rata-rata PKDW/Hari Pakai", "x.date": "Tanggal", "x.month": "Bulan",
   "x.dwSites": "Site Pakai DW", "x.rowsFilled": "Baris Terisi", "x.rowsMissing": "Baris Belum Isi", "x.totalMissing": "Total Belum Isi", "x.missingMark": "BELUM",
-  "x.sSummary": "Ringkasan", "x.sSites": "PKDW 59 Site", "x.sFormat": "Per Site & Format", "x.sDailySite": "PKDW Harian per Site",
+  "x.sSummary": "Ringkasan", "x.sSites": "PKDW per Site", "x.sFormat": "Per Site & Format", "x.sDailySite": "PKDW Harian per Site",
   "x.sDaily": "Total Harian", "x.sCompliance": "Kepatuhan Isi", "x.sTrendTotal": "Total per Bulan", "x.sTrendSite": "PKDW per Site per Bulan", "x.sWeekly": "Per Minggu",
   "x.reportTitle": "Laporan Pemakaian MH Daily Worker (PKDW) — {month}",
   "x.reportSub": "Sumber: tab \"{tab}\" · data terisi s.d. {last} · diunduh {now}",
   "x.metric": "Metrik", "x.value": "Nilai", "x.note": "Keterangan",
-  "x.mTotal": "Total PKDW (MH)", "x.mTotalN": "Station PKDW + Training PKDW, 59 site",
+  "x.mTotal": "Total PKDW (MH)", "x.mTotalN": "Station + Training + Kiosk PKDW, semua site",
   "x.mPrev": "Total PKDW bulan lalu (MH)", "x.noTab": "tab tidak ada",
   "x.mSites": "Jumlah site", "x.mSitesN": "{n} baris termasuk VIP/Junior",
   "x.mAvg": "Rata-rata PKDW per hari (MH)", "x.mShare": "Porsi DW (%)",
@@ -208,7 +213,7 @@ export default {
   "search.g.notes": "Catatan & Reason", "search.g.downloads": "Unduh", "search.g.dates": "Tanggal",
   "search.chipH1": "Belum isi H-1", "search.chipAlert": "Ter-flag",
   "search.monthSub": "Buka di {v}", "search.dateH1": "Cek pengisian H-1 tanggal ini", "search.dateAlert": "Productivity Alert tanggal ini",
-  "search.dl.month": "Excel PKDW 59 Site", "search.dl.csv": "CSV PKDW 59 Site", "search.dl.alert": "Excel Productivity Alert",
+  "search.dl.month": "Excel PKDW per Site", "search.dl.csv": "CSV PKDW per Site", "search.dl.alert": "Excel Productivity Alert",
   "search.dl.budget": "Excel Budget vs Actual", "search.dl.trend": "Excel Tren Bulanan", "search.dl.reasons": "Excel Catatan & Reason",
   // Harian per Site
   "nav.daily": "Harian per Site", "search.dl.daily": "Excel Harian per Site",

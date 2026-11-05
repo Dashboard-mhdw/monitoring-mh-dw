@@ -10,10 +10,10 @@ Dashboard pemakaian **Man Hour Daily Worker (PKDW)** untuk 59 site, bersumber da
 Google Sheets "Man Hour Usage"
         │  (tiap hari, otomatis: tugas terjadwal Claude + konektor Google Sheets)
         ▼
-scripts/build-data.js  →  data.json  →  commit ke repo ini
+scripts/build-data.js  →  data.json (lokal)  →  scripts/seal-data.mjs  →  secure/ (terkunci per region)  →  commit
         │
         ▼
-GitHub Pages: index.html membaca data.json  →  cukup buka link / refresh
+GitHub Pages: masukkan password  →  data region itu dibuka di browser
 ```
 
 - `index.html` hanya kerangka halaman. Isinya dirender oleh modul di `src/`.
@@ -25,8 +25,9 @@ index.html                 kerangka (sidebar, navbar, tab bar)
 core.js                    aturan domain, dipakai juga oleh script Node
 src/styles/                tokens.css · base.css · layout.css · components.css
 src/app/main.js            entry: router, navigasi, event global, boot
-src/app/store.js           lapisan data (data.json, targets.json, budget terkunci), tanpa DOM
-src/app/vault.js           buka secure/vault.json dengan password (PBKDF2 + AES-GCM, di browser)
+src/app/store.js           lapisan data (data terkunci per region, targets.json), tanpa DOM
+src/app/vault.js           password → kunci privat (secure/vault.json) → buka data secure/m/… di browser
+src/app/features/gate.js   halaman password
 src/app/state.js           state UI (halaman, bulan, filter, tema)
 src/app/i18n.js            t(key), ganti bahasa
 src/app/locales/id.js|en.js  kamus teks
@@ -37,8 +38,8 @@ src/app/reasons.js         lapisan data catatan/reason (Google Sheet via Apps Sc
 ```
 Setelah mengubah teks, jalankan `node scripts/check-i18n.mjs` untuk memastikan kedua bahasa lengkap.
 - `core.js` berisi rumus parsing dan perhitungan. Dashboard dan script pembuat data memakai file yang sama, jadi angkanya pasti identik.
-- `data.json` adalah data ringkas semua tab bulan. Diperbarui otomatis setiap hari.
-- `scripts/build-data.js` mengubah hasil baca Google Sheets menjadi `data.json`.
+- `data.json` adalah data ringkas semua tab bulan, hanya ada lokal saat update. Yang di-commit versi terkuncinya di `secure/`.
+- `scripts/build-data.js` mengubah hasil baca Google Sheets menjadi `data.json`; `scripts/seal-data.mjs` menguncinya per region.
 - `scripts/UPDATE.md` berisi instruksi langkah demi langkah yang dijalankan tugas terjadwal.
 
 Di kanan atas dashboard tertulis **"Data per …"**, yaitu waktu terakhir data diambil. Titiknya berubah merah kalau data sudah lebih dari 26 jam tidak diperbarui.
@@ -76,12 +77,26 @@ Catatan keamanan: URL web app bisa dipakai siapa saja yang tahu alamatnya. Scrip
 | Productivity | Admits ÷ Total MH per site per hari (Admits kosong = 0) |
 | Productivity Alert | site ter-flag kalau PKDW > 0 **dan** productivity < target − 1; warnings minggu ini = jumlah hari seperti itu dalam minggu fiskal berjalan (Rabu–Selasa) s.d. tanggal laporan |
 
-Budget DW per site per minggu (Sep–Des 2026) **tidak disimpan terbuka di repo ini**. Datanya dikunci di `secure/vault.json`: satu bagian per password (Region 1–6 hanya berisi site region itu, Admin berisi semua). Password dimasukkan di halaman Budget vs Actual dan tidak pernah dikirim ke mana pun; budget yang sudah terbuka hanya disimpan di tab itu (sessionStorage) dan terkunci lagi saat tab ditutup.
+## Akses dengan password
 
-Mengunci ulang (setelah budget berubah atau password diganti), dari salinan pribadi di luar repo:
+Dashboard terkunci: halaman pertama meminta password. Ada **6 password region** (masing-masing hanya membuka site di region itu, di semua halaman) dan **1 password admin** (semua site, plus email reminder per region dan email FYI budget). Password tidak pernah disimpan di repo atau dikirim ke mana pun; dashboard terkunci lagi saat tab ditutup atau saat klik **Keluar**.
+
+Cara kerjanya:
+
+| File | Isi |
+|---|---|
+| `secure/keys.json` | kunci publik tiap region + admin (aman dibagikan) |
+| `secure/vault.json` | kunci privat + budget tiap region/admin, masing-masing dikunci password-nya (PBKDF2-SHA256 → AES-GCM) |
+| `secure/m/<YYYY-MM>/<all\|r1..r6>.json` | data harian per bulan, dikunci ke kunci publik scope itu (ECDH P-256 + AES-GCM) |
+| `secure/index.json` | daftar bulan dan waktu update (tanpa data site) |
+
+Update otomatis (`scripts/UPDATE.md`) hanya butuh kunci publik, jadi tidak perlu tahu password. `data.json` dan `budget.json` hanya ada lokal (di-.gitignore).
+
+**Ganti password / budget berubah** — dari salinan pribadi di luar repo, dengan `data.json` lengkap (semua bulan):
 
 ```
-node scripts/seal-budget.mjs /path/pribadi/budget.json /path/pribadi/passwords.json
+node scripts/seal-vault.mjs /path/pribadi/budget.json /path/pribadi/passwords.json   # kunci baru + vault baru
+node scripts/seal-data.mjs /path/pribadi/data.json                                  # kunci ulang semua bulan
 ```
 
 `passwords.json` = `{"REGION 1": "...", ..., "REGION 6": "...", "ADMIN": "..."}`. Isi budget aslinya diambil dari **payroll.xlsx sheet PROD 14** (budget): `mh` = budget MH DW, `admits` = forecast admits, `prod` = target productivity, `fth` = jam karyawan tetap (FT × 40 × hari/7). Rumus budget DW di file itu: `max(0, admits ÷ (prod × 90%) − fth)`.
@@ -91,4 +106,4 @@ Target productivity (12 atau 14) dan region setiap site ada di `targets.json`, d
 Isian di tanggal yang belum lewat (biasanya salah kolom) tidak ikut dijumlah, tetapi ditampilkan sebagai peringatan. Total per bulan sudah dicocokkan dengan kolom MTD "PKDW" di setiap tab, dari Januari 2025 sampai Oktober 2026.
 
 ## Catatan privasi
-Situs GitHub Pages bersifat publik. Siapa pun yang tahu link-nya bisa melihat angka man hour per site. `data.json` hanya berisi nama site, format, Admits, dan kolom man hour, tanpa email maupun nama karyawan.
+Situs GitHub Pages bersifat publik, tetapi data man hour, admits, dan budget hanya tersimpan dalam bentuk terkunci (lihat **Akses dengan password**). Yang terbuka hanya `targets.json` (daftar site, region, target productivity) dan `secure/index.json` (daftar bulan). Catatan/Reason disimpan lewat Apps Script; dashboard hanya menampilkan catatan site di region password yang dipakai.

@@ -3,6 +3,8 @@
 // code in scripts/notes-apps-script.gs). Without an endpoint, or while the endpoint can't be reached,
 // notes are kept in this browser and uploaded on the next successful load (the script ignores duplicate ids).
 
+import { scopeCodes } from "./store.js";
+
 const LS_PENDING = "mhdw.reasons.pending", LS_BY = "mhdw.reasons.by";
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
@@ -16,16 +18,19 @@ const fromRow = r => ({id: String(r.id), ts: String(r.timestamp || ""), site: St
   date: String(r.tanggal || "").slice(0, 10), context: r.konteks || "", category: r.kategori || "", reason: r.reason || "",
   source: r.sumber || "", by: r.dicatat_oleh || ""});
 
+/** Notes the current password may see (region passwords: their own sites only). */
+const visible = () => { const c = scopeCodes(); return c ? LIST.filter(n => c.has(n.site)) : LIST; };
+
 export const reasons = {
   /** "loading" | "local" (no endpoint configured) | "sheet" (Google Sheet) | "offline" (endpoint unreachable) */
   get mode() { return MODE; },
   get error() { return ERR; },
-  get all() { return LIST.slice().sort(newest); },
-  get pendingCount() { return LIST.filter(n => n.local).length; },
+  get all() { return visible().slice().sort(newest); },
+  get pendingCount() { return visible().filter(n => n.local).length; },
   get lastBy() { return lsGet(LS_BY, ""); },
-  forSite: code => LIST.filter(n => n.site === String(code)).sort(newest),
-  onDate: (code, iso) => LIST.filter(n => n.site === String(code) && n.date === iso),
-  inMonth: (code, key) => LIST.filter(n => n.site === String(code) && (n.date || "").startsWith(key)),
+  forSite: code => visible().filter(n => n.site === String(code)).sort(newest),
+  onDate: (code, iso) => visible().filter(n => n.site === String(code) && n.date === iso),
+  inMonth: (code, key) => visible().filter(n => n.site === String(code) && (n.date || "").startsWith(key)),
 };
 export const onReasons = fn => subs.add(fn);
 

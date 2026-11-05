@@ -36,6 +36,11 @@ export default {
     const rangeLabel = from === to ? dateLong(to) : `${dateLong(from)} – ${dateLong(to)}`;
     if (!a) { c.innerHTML = header(title, rangeLabel, tools) + `<div class="row">${presets}</div>` + notice(t("alert.noDate"), t("alert.noDateSub")); wireDate(); return; }
 
+    // Email per region (admin only): the preview and copy buttons follow the chosen region.
+    const regs = [...new Set(a.flagged.map(r => r.region))].sort((x, y) => x.localeCompare(y, undefined, {numeric: true}));
+    const admin = store.access && store.access.scope === "ALL";
+    const mReg = admin && regs.includes(state.alertMailRegion) ? state.alertMailRegion : "";
+    const am = mReg ? {...a, flagged: a.flagged.filter(r => r.region === mReg), region: mReg} : a;
     const F = a.flagged, dwSum = F.reduce((s, r) => s + r.pkdw, 0);
     const fSites = new Set(F.map(r => r.code)).size;
     const heavy = new Set(F.filter(r => r.warn >= 5).map(r => r.code)).size;
@@ -75,14 +80,16 @@ export default {
       </table></div>
       <h2 class="section-head">${t("alert.preview")}</h2>
       <p class="foot" style="margin-top:-8px">${t("alert.previewNote")}</p>
-      <div class="row" style="margin-top:-4px"><span style="font-size:var(--t-subhead)"><span class="muted">Subject:</span> <b id="alSubj">${esc(mailSubject(a))}</b></span><span class="spacer"></span>${btn(t("alert.copySubject"), {id: "copySubj", icon: ICON.copy})}</div>
-      <div class="mail-paper">${F.length ? mailHTML(a) : `<p style="font-family:Arial;color:#555">No cinemas need a reminder for ${M ? dateEN(a.from) + " to " + dateEN(a.date) : dateEN(a.date)}.</p>`}</div>
+      ${admin && regs.length > 1 ? `<div class="row">${segmented("amreg", mReg, [["", t("alert.mailAll")], ...regs.map(g => [g, g.replace(/^REGION/, "Region")])], t("alert.mailFor"))}</div>` : ""}
+      <div class="row" style="margin-top:-4px"><span style="font-size:var(--t-subhead)"><span class="muted">Subject:</span> <b id="alSubj">${esc(mailSubject(am))}</b></span><span class="spacer"></span>${btn(t("alert.copySubject"), {id: "copySubj", icon: ICON.copy})}</div>
+      <div class="mail-paper">${am.flagged.length ? mailHTML(am) : `<p style="font-family:Arial;color:#555">No cinemas need a reminder for ${M ? dateEN(a.from) + " to " + dateEN(a.date) : dateEN(a.date)}.</p>`}</div>
       <p class="foot">${t("alert.foot", {tol: a.tolerance})}</p>`;
 
     wireDate();
     on(c, "[data-amode]", "click", b => { state.alertMode = b.dataset.amode; app.rerender(); });
-    on(c, "#copyMail", "click", () => { if (!F.length) { hud(t("alert.nothing")); return; } copyRich(mailHTML(a), mailText(a), t("alert.mailCopied")); });
-    on(c, "#copySubj", "click", () => copyText(mailSubject(a), t("alert.subjectCopied")));
-    on(c, "#copyText", "click", () => copyText(mailText(a), t("toast.textCopied")));
+    on(c, "[data-amreg]", "click", b => { state.alertMailRegion = b.dataset.amreg; app.rerender(); });
+    on(c, "#copyMail", "click", () => { if (!am.flagged.length) { hud(t("alert.nothing")); return; } copyRich(mailHTML(am), mailText(am), t("alert.mailCopied")); });
+    on(c, "#copySubj", "click", () => copyText(mailSubject(am), t("alert.subjectCopied")));
+    on(c, "#copyText", "click", () => copyText(mailText(am), t("toast.textCopied")));
   },
 };

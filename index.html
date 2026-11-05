@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="src/styles/layout.css">
 <link rel="stylesheet" href="src/styles/components.css">
 <!-- Domain rules shared with the Node build scripts -->
-<script src="core.js?v=20261030a"></script>
+<script src="core.js?v=20261105a"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script type="module" src="src/app/main.js"></script>
 </head>
@@ -29,6 +29,7 @@
     <button class="side-search" id="sideSearch" type="button" data-act="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg><span data-i18n="search.btn">Cari</span><kbd id="sideKbd">⌘K</kbd></button>
     <nav id="sideNav"></nav>
     <div class="side-foot" id="sideFoot">
+      <div class="who" id="who"></div>
       <div class="segmented" role="group" data-i18n-aria="more.language"><button type="button" data-lang="id">Indonesia</button><button type="button" data-lang="en">English</button></div>
       <div class="segmented" role="group" data-i18n-aria="more.theme"><button type="button" data-thm="auto" data-i18n="theme.auto">Auto</button><button type="button" data-thm="light" data-i18n="theme.light">Terang</button><button type="button" data-thm="dark" data-i18n="theme.dark">Gelap</button></div>
       <a id="sheetLink" target="_blank" rel="noopener"><span data-i18n="nav.sheet">Buka spreadsheet</span> ↗</a>

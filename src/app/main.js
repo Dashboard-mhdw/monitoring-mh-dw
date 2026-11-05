@@ -3,7 +3,8 @@ import { t, getLang, setLang, onLangChange, translateDom } from "./i18n.js";
 import { monthName, stamp, YESTERDAY } from "./format.js";
 import { $, esc, ICON, initTooltip } from "./ui/dom.js";
 import { header, notice } from "./ui/components.js";
-import { store, loadAll, missingOn, alertsOn } from "./store.js";
+import { store, loadAll, missingOn, alertsOn, lock } from "./store.js";
+import { renderGate } from "./features/gate.js";
 import { state, persist, applyTheme, MONTH_VIEWS } from "./state.js";
 import { ACTIONS } from "./features/exports.js";
 import { openSite } from "./features/site-detail.js";
@@ -56,6 +57,7 @@ function renderChrome() {
   document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === getLang()));
   document.querySelectorAll("#sideFoot [data-thm]").forEach(b => b.setAttribute("aria-pressed", b.dataset.thm === state.theme));
   $("compactTitle").textContent = t("nav." + state.view);
+  $("who").innerHTML = store.access ? `<span class="who-label">${ICON.lock}${esc(store.access.label)}</span><button type="button" class="btn plain who-out" data-act="logout">${t("lock.signOut")}</button>` : "";
   $("monthSel").hidden = !MONTH_VIEWS.includes(state.view);
   document.title = t("nav." + state.view) + " · Monitoring MH DW";
 }
@@ -104,6 +106,7 @@ function wireGlobal() {
     if (el.dataset.lang) return setLang(el.dataset.lang);
     if (el.dataset.thm) { state.theme = el.dataset.thm; persist(); applyTheme(); renderChrome(); if (state.view === "more") render(); return; }
     if (el.dataset.act === "search") return openSearch(app);
+    if (el.dataset.act === "logout") { lock(); return boot(); }
     if (el.dataset.act === "reasons-xlsx") return exportReasons();
     if (el.dataset.act && ACTIONS[el.dataset.act]) return ACTIONS[el.dataset.act]();
     if (el.dataset.site) {
@@ -118,6 +121,15 @@ function wireGlobal() {
 }
 
 /* ---------- Boot ---------- */
+function showGate() {
+  document.body.classList.add("locked");
+  badges.h1 = badges.alert = badges.reasons = 0;
+  setSync("", ""); $("dataStamp").textContent = "";
+  renderChrome();
+  document.title = "Monitoring MH DW";
+  renderGate($("content"), () => boot());
+}
+
 async function boot() {
   $("refreshBtn").disabled = true; setSync("busy", t("common.loading"));
   try {
@@ -128,7 +140,9 @@ async function boot() {
     badges.alert = al ? al.flagged.length : 0;
     renderChrome(); render(); syncStatus();
     loadReasons();
+    document.body.classList.remove("locked");
   } catch (err) {
+    if (err && err.code === "locked") { showGate(); return; }
     console.error(err);
     setSync("err", t("err.failed"));
     const [a, b] = errorCopy(err);
@@ -136,7 +150,7 @@ async function boot() {
   } finally { $("refreshBtn").disabled = false; }
 }
 
-onReasons(() => { try { badges.reasons = needCount(); } catch (e) { badges.reasons = 0; } renderChrome(); render(); });
+onReasons(() => { if (!store.access) return; try { badges.reasons = needCount(); } catch (e) { badges.reasons = 0; } renderChrome(); render(); });
 
 applyTheme();
 $("sheetLink").href = SHEET_URL;

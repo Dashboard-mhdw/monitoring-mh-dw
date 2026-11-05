@@ -11,7 +11,7 @@ export default {
   "aria.nav": "Navigation", "aria.tabs": "Tabs", "aria.month": "Choose month",
   "nav.gMonitor": "Monitoring", "nav.gReports": "Reports",
   "nav.overview": "Overview", "nav.h1": "Yesterday's Check", "nav.alert": "Productivity Alert",
-  "nav.sites": "PKDW by Site", "nav.budget": "Budget vs Actual", "nav.trend": "Monthly Trend",
+  "nav.sites": "PKDW per Site", "nav.budget": "Budget vs Actual", "nav.trend": "Monthly Trend",
   "nav.map": "Fill Map", "nav.more": "More",
   "nav.sheet": "Open spreadsheet",
   "tab.overview": "Overview", "tab.h1": "H-1", "tab.alert": "Alert", "tab.sites": "Sites", "tab.more": "More",
@@ -44,7 +44,7 @@ export default {
   "ov.sub": "{month} · filled through {last}",
   "ov.download": "Download monthly report",
   "ov.vsFirstDays": "vs first {n} days of {month}",
-  "ov.kpiTotal": "Total PKDW usage · 59 sites",
+  "ov.kpiTotal": "Total PKDW usage · all sites",
   "ov.kpiSites": "Sites using DW", "ov.kpiSitesSub": "{n} sites without DW this month",
   "ov.kpiAvg": "Daily average", "ov.kpiAvgSub": "over {n} days with data",
   "ov.kpiShare": "DW share of total MH", "ov.kpiShareSub": "Total MH {total} · PKWT {pkwt}",
@@ -53,7 +53,7 @@ export default {
   "ov.filling": "Submissions", "ov.mapLink": "Map",
   "ov.compliance": "Fill rate this month", "ov.complianceSub": "{m} of {s} slots (row × day) still empty through yesterday",
   "ov.h1Missing": "{n} sites didn't fill in yesterday", "ov.h1AllDone": "Everyone filled in yesterday", "ov.h1Tap": "tap for the reminder",
-  "ov.top10": "Top 10 sites by PKDW", "ov.allSites": "See all 59 sites",
+  "ov.top10": "Top 10 sites by PKDW", "ov.allSites": "See all sites",
   "ov.tipTop": "PKDW {v} MH · {d} days using DW", "ov.tipShare": "DW share {p}",
 
   // H-1
@@ -66,7 +66,7 @@ export default {
   "h1.reminderTitle": "Reminder text",
   "h1.reminderLang": "The reminder follows the selected language. Switch to Indonesia at the top right for the Indonesian version.",
   "h1.reminder": "Good morning, Cinema team,\n\nPlease complete the Man Hour entries for {date} using this link:\n{url}\n\nCinemas that haven't filled in yet:\n{list}\n\nThank you 🙏",
-  "h1.allDone": "Everyone has filled in", "h1.allDoneSub": "All {n} rows across 59 sites are complete for {date}.",
+  "h1.allDone": "Everyone has filled in", "h1.allDoneSub": "All {n} rows are complete for {date}.",
 
   // Alert
 
@@ -120,7 +120,12 @@ export default {
   // Budget
   "bstat.over": "Over budget", "bstat.nobudget": "No budget", "bstat.early": "Used before schedule",
   "bstat.near": "Close (≥90%)", "bstat.ok": "Within budget", "bstat.none": "Not used",
-  "lock.title": "Budget is locked", "lock.sub": "Enter your region password to see the budget, remaining DW man-hours and usage per site.", "lock.placeholder": "Password", "lock.open": "Open budget", "lock.checking": "Checking…", "lock.wrong": "Password does not match. Check capital letters and dashes.", "lock.error": "Could not load the locked data. Try refreshing the page.", "lock.note": "Passwords come from the central Operations team. The budget locks again when the tab is closed.", "lock.lockBtn": "Lock",
+  "lock.loading": "Opening data…",
+  "lock.signOut": "Sign out",
+  "budget.noBudget": "No budget data yet",
+  "budget.noBudgetSub": "Budget data for this access is not available yet.",
+  "alert.mailAll": "All regions", "alert.mailFor": "Email for",
+  "lock.sub": "Enter your region password. Each password shows only the sites in that region.", "lock.placeholder": "Password", "lock.open": "Sign in", "lock.checking": "Checking…", "lock.wrong": "Password does not match. Check capital letters and dashes.", "lock.error": "Could not load the locked data. Try refreshing the page.", "lock.note": "Passwords come from the central Operations team. The dashboard locks again when the tab is closed.",
   "budget.until": "to", "budget.week": "Week", "budget.dates": "Dates",
   "budget.toDate": "to date", "budget.notStarted": "not started", "budget.notYet": "not yet",
   "budget.noMonth": "No budget for {month} yet", "budget.noMonthSub": "Choose another month at the top right, or ask the admin to add this month's budget.",
@@ -153,12 +158,12 @@ export default {
   // Exports
   "x.code": "Code", "x.avgDw": "Avg PKDW / DW Day", "x.date": "Date", "x.month": "Month",
   "x.dwSites": "Sites Using DW", "x.rowsFilled": "Rows Filled", "x.rowsMissing": "Rows Not Filled", "x.totalMissing": "Total Not Filled", "x.missingMark": "MISSING",
-  "x.sSummary": "Summary", "x.sSites": "PKDW by Site", "x.sFormat": "By Site & Format", "x.sDailySite": "Daily PKDW by Site",
+  "x.sSummary": "Summary", "x.sSites": "PKDW per Site", "x.sFormat": "By Site & Format", "x.sDailySite": "Daily PKDW by Site",
   "x.sDaily": "Daily Totals", "x.sCompliance": "Fill Compliance", "x.sTrendTotal": "Total by Month", "x.sTrendSite": "PKDW by Site by Month", "x.sWeekly": "By Week",
   "x.reportTitle": "Daily Worker Man-Hour (PKDW) Usage Report — {month}",
   "x.reportSub": "Source: tab \"{tab}\" · filled through {last} · downloaded {now}",
   "x.metric": "Metric", "x.value": "Value", "x.note": "Note",
-  "x.mTotal": "Total PKDW (MH)", "x.mTotalN": "Station PKDW + Training PKDW, 59 sites",
+  "x.mTotal": "Total PKDW (MH)", "x.mTotalN": "Station + Training + Kiosk PKDW, all sites",
   "x.mPrev": "Total PKDW last month (MH)", "x.noTab": "tab missing",
   "x.mSites": "Number of sites", "x.mSitesN": "{n} rows incl. VIP/Junior",
   "x.mAvg": "Average PKDW per day (MH)", "x.mShare": "DW share (%)",
@@ -208,7 +213,7 @@ export default {
   "search.g.notes": "Notes & Reasons", "search.g.downloads": "Downloads", "search.g.dates": "Dates",
   "search.chipH1": "H-1 missing", "search.chipAlert": "Flagged",
   "search.monthSub": "Open in {v}", "search.dateH1": "Check H-1 entries for this date", "search.dateAlert": "Productivity Alert for this date",
-  "search.dl.month": "PKDW 59 Sites Excel", "search.dl.csv": "PKDW 59 Sites CSV", "search.dl.alert": "Productivity Alert Excel",
+  "search.dl.month": "PKDW per Site Excel", "search.dl.csv": "PKDW per Site CSV", "search.dl.alert": "Productivity Alert Excel",
   "search.dl.budget": "Budget vs Actual Excel", "search.dl.trend": "Monthly Trend Excel", "search.dl.reasons": "Notes & Reasons Excel",
   // Daily per site
   "nav.daily": "Daily per Site", "search.dl.daily": "Daily per Site Excel",

@@ -77,7 +77,7 @@
 .list li{display:flex;align-items:center;gap:var(--s3);padding:11px var(--s4);position:relative;min-width:0}
 .list li+li::before{content:"";position:absolute;top:0;left:58px;right:0;border-top:.5px solid var(--separator)}
 .list .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:none;font-size:var(--t-footnote);font-weight:700;color:#fff;background:var(--red);font-variant-numeric:tabular-nums}
-.list .ic.blue{background:var(--blue)} .list .ic.green{background:var(--green)} .list .ic.orange{background:var(--orange)} .list .ic.indigo{background:var(--indigo)} .list .ic.gray{background:#8e8e93}
+.list .ic.blue{background:var(--blue)} .list .ic.green{background:var(--green)} .list .ic.orange{background:var(--orange)} .list .ic.indigo{background:var(--indigo)} .list .ic.gray{background:#8e8e93} .list .ic.red{background:var(--red)}
 .list .ic svg{width:17px;height:17px}
 .list .main-t{flex:1;min-width:0}
 .list .main-t b{display:block;font-weight:500;overflow-wrap:anywhere}
@@ -340,7 +340,15 @@ table.dmx td.low{color:var(--red-text);font-weight:700}
 
 /* Budget lock screen */
 .lock-card{max-width:420px;margin:var(--s5) auto;display:grid;gap:var(--s3);justify-items:center;text-align:center;padding:var(--s6) var(--s5)}
-.lock-card h2{margin:0}
+.lock-card h2,.lock-card .lock-title{margin:0}
+.lock-title{font-size:var(--t-title2,22px)}
+body.locked .sidebar,body.locked .tabbar,body.locked #monthSel,body.locked .nav-search,body.locked #refreshBtn,body.locked #sync{display:none}
+body.locked .app{grid-template-columns:1fr}
+body.locked .content{display:grid;place-items:start center;padding-top:8vh}
+.who{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:var(--t-footnote,12px)}
+.who-label{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.who-label svg{width:13px;height:13px}
+.who-out{padding:2px 8px;font-size:inherit}
 .lock-card p{margin:0}
 .lock-icon{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--fill);color:var(--blue)}
 .lock-icon svg{width:26px;height:26px}

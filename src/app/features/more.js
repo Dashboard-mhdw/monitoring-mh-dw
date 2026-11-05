@@ -1,6 +1,7 @@
 // Lainnya / More — phone-only hub: remaining pages + settings (language, theme), iOS Settings style.
 import { t, getLang } from "../i18n.js";
-import { ICON, on } from "../ui/dom.js";
+import { ICON, on, esc } from "../ui/dom.js";
+import { store } from "../store.js";
 import { header, segmented } from "../ui/components.js";
 import { state } from "../state.js";
 import { SHEET_URL } from "./shared.js";
@@ -18,6 +19,7 @@ export default {
       <ul class="list">
         <li><span class="ic blue">${ICON.globe}</span><span class="main-t"><b>${t("more.language")}</b></span>${segmented("lang", getLang(), [["id", "Indonesia"], ["en", "English"]], t("more.language"))}</li>
         <li><span class="ic indigo">${ICON.moon}</span><span class="main-t"><b>${t("more.theme")}</b></span>${segmented("thm", state.theme, [["auto", t("theme.auto")], ["light", t("theme.light")], ["dark", t("theme.dark")]], t("more.theme"))}</li>
+        ${store.access ? `<li class="clickable" data-act="logout"><span class="ic red">${ICON.lock}</span><span class="main-t"><b>${t("lock.signOut")}</b><span class="muted">${esc(store.access.label)}</span></span></li>` : ""}
       </ul>`;
     on(c, "[data-href]", "click", el => window.open(el.dataset.href, "_blank", "noopener"));
   },
