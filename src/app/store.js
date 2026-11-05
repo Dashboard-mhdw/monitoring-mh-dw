@@ -68,7 +68,7 @@ export function alertsOn(iso) {
 
 function setAccess(p, budget = null) {
   BUDGET = p ? budget : null;
-  ACCESS = p ? {scope: p.scope, label: p.label} : null;
+  ACCESS = p ? {scope: p.scope, label: p.label, token: p.token || ""} : null;
 }
 
 /** Unlock the dashboard with a region/admin password. Resolves true when it matched (data loads on the next loadAll). */
@@ -84,13 +84,33 @@ export function scopeCodes() {
   return new Set(Object.keys(T).filter(c => T[c].region === ACCESS.scope));
 }
 
+/** Apply budget transfers made after the budget was last read from the sheet (the sheet itself is already updated;
+ *  the dashboard picks that up at the next scheduled update). Each transfer moves MH from its date to month end. */
+function withTransfers(b, key, transfers) {
+  const built = b.builtAt ? Date.parse(b.builtAt) : 0;
+  const list = (transfers || []).filter(x => x.status === "ok" && x.month === key && Date.parse(x.ts) > built);
+  if (!list.length) return b;
+  const sites = JSON.parse(JSON.stringify(b.sites || {}));
+  const spread = (site, mh, fromIso) => {
+    const s = sites[site]; if (!s) return;
+    const w = (b.periods || []).map(p => p.end < fromIso ? 0 : (Date.parse(p.end) - Date.parse(p.start < fromIso ? fromIso : p.start)) / 864e5 + 1);
+    const tot = w.reduce((a, v) => a + v, 0) || 1;
+    s.mh = (s.mh || []).map((v, i) => v + mh * w[i] / tot);
+    s.mhMonth = (s.mhMonth || 0) + mh;
+    s.amountMonth = (s.amountMonth || 0) + mh * (s.rate || 0);
+  };
+  list.forEach(x => { const d = x.ts.slice(0, 10); spread(x.from, -x.mh, d); spread(x.to, x.mhTo, d); });
+  return {...b, sites, pendingTransfers: list.length};
+}
+
 /** Budget vs actual for a month up to a cut-off date, limited to the unlocked region. */
-export function budgetVsActual(key, cut) {
+export function budgetVsActual(key, cut, transfers) {
   const g = getMonth(key);
   if (!g || !BUDGET) return null;
   const codes = scopeCodes();
-  const b = BUDGET.byMonth && BUDGET.byMonth[key];
+  let b = BUDGET.byMonth && BUDGET.byMonth[key];
   if (!b) return null;
+  b = withTransfers(b, key, transfers);
   const m = codes ? {...g.m, rows: g.m.rows.filter(r => codes.has(r.code))} : g.m;
   const r = Core.budgetVsActual(m, b, cut);
   if (r) enrichAmounts(r, b);
@@ -113,6 +133,8 @@ function enrichAmounts(r, b) {
   const sum = k => r.rows.reduce((a, x) => a + (x[k] || 0), 0);
   Object.assign(r.tot, {amountMonth: sum("amountMonth"), amountActual: sum("amountActual"), amountToDate: sum("amountToDate"), amountRemaining: sum("amountRemaining"), ft: sum("ft")});
   r.control = b.control || {};
+  r.pendingTransfers = b.pendingTransfers || 0;
+  r.periodsDef = b.periods || [];
   r.source = b.source || "";
 }
 

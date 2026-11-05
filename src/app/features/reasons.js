@@ -11,12 +11,12 @@ import { cutFor } from "./budget.js";
 
 /** Where the note came from (konteks) and why (kategori). Stored in the sheet as the Indonesian label. */
 export const CONTEXTS = ["alert", "over", "nobudget", "h1", "other"];
-export const CATEGORIES = ["admits", "nobar", "event", "kiosk", "other", "noreply"];
+export const CATEGORIES = ["nobar", "event", "backup", "admits", "kiosk", "training", "ops", "input", "other", "noreply"];
 /** Older categories: no longer offered in the form, but notes saved with them still display and count. */
-const LEGACY = ["sick", "training", "ops", "input"];
+const LEGACY = ["sick"];
 const ALL_CATS = [...CATEGORIES, ...LEGACY];
 /** Labels the sheet may still hold from before the category rename. */
-const OLD_LABEL = {"Admits di atas perkiraan": "admits", "Event / film besar": "event"};
+const OLD_LABEL = {"Admits di atas perkiraan": "admits", "Event / film besar": "event", "Admits tinggi": "admits", "Nobar": "nobar", "Event": "event", "Kiosk": "kiosk", "Other": "other", "Kebutuhan operasional lain": "ops"};
 const ID = _dicts.id;
 const idLabel = (kind, k) => ID[`reason.${kind}.${k}`];
 /** Show a stored label in the active language (falls back to the stored text). */
@@ -110,7 +110,7 @@ function needed() {
   const out = [];
   const a = alertsOn(YESTERDAY);
   if (a) a.flagged.forEach(r => { if (!reasons.onDate(r.code, a.date).length) out.push({site: r.code, cinema: r.cinema, date: a.date, context: "alert", why: t("reason.whyAlert", {w: r.warn, p: (Math.round(r.prod * 10) / 10).toFixed(1), tg: r.target})}); });
-  const key = state.month, cut = cutFor(key), b = budgetVsActual(key, cut);
+  const key = state.month, cut = cutFor(key), b = budgetVsActual(key, cut, reasons.transfers);
   if (b) b.rows.filter(x => x.status === "over" || x.status === "nobudget").forEach(x => {
     if (reasons.inMonth(x.code, key).some(n => ["over", "nobudget"].includes(ctxKey(n.context)))) return;
     out.push({site: x.code, cinema: x.cinema, date: cut, month: key, context: x.status, why: x.status === "over" ? t("reason.whyOver", {a: fmt(x.actual), b: fmt(x.budgetToDate)}) : t("reason.whyNoBudget", {a: fmt(x.actual)})});

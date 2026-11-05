@@ -40,297 +40,474 @@
   "2": {
    "region": "REGION 3",
    "target": 14,
-   "name": "2-LIPPO MALL NUSANTARA"
+   "name": "2-LIPPO MALL NUSANTARA",
+   "lat": -6.201,
+   "lng": 106.824,
+   "city": "Jakarta"
   },
   "3": {
    "region": "REGION 2",
    "target": 12,
-   "name": "3-PALEMBANG ICON"
+   "name": "3-PALEMBANG ICON",
+   "lat": -2.979,
+   "lng": 104.747,
+   "city": "Palembang"
   },
   "4": {
    "region": "REGION 6",
    "target": 12,
-   "name": "4-LIPPO PLAZA MANADO"
+   "name": "4-LIPPO PLAZA MANADO",
+   "lat": 1.493,
+   "lng": 124.841,
+   "city": "Manado"
   },
   "5": {
    "region": "REGION 5",
    "target": 14,
-   "name": "5-PONOROGO CITY CENTER"
+   "name": "5-PONOROGO CITY CENTER",
+   "lat": -7.871,
+   "lng": 111.462,
+   "city": "Ponorogo"
   },
   "6": {
    "region": "REGION 6",
    "target": 12,
-   "name": "6-LM KUTA"
+   "name": "6-LM KUTA",
+   "lat": -8.721,
+   "lng": 115.17,
+   "city": "Kuta"
   },
   "7": {
    "region": "REGION 1",
    "target": 12,
-   "name": "7-SUN PLAZA"
+   "name": "7-SUN PLAZA",
+   "lat": 3.583,
+   "lng": 98.672,
+   "city": "Medan"
   },
   "8": {
    "region": "REGION 1",
    "target": 14,
-   "name": "8-LIPPO PLAZA MEDAN"
+   "name": "8-LIPPO PLAZA MEDAN",
+   "lat": 3.589,
+   "lng": 98.673,
+   "city": "Medan"
   },
   "10": {
    "region": "REGION 5",
    "target": 14,
-   "name": "10-LIPPO PLAZA JOGJA"
+   "name": "10-LIPPO PLAZA JOGJA",
+   "lat": -7.783,
+   "lng": 110.399,
+   "city": "Yogyakarta"
   },
   "11": {
    "region": "REGION 2",
    "target": 12,
-   "name": "11-MAXXBOX LIPPO VILLAGE"
+   "name": "11-MAXXBOX LIPPO VILLAGE",
+   "lat": -6.231,
+   "lng": 106.609,
+   "city": "Tangerang"
   },
   "13": {
    "region": "REGION 2",
    "target": 14,
-   "name": "13-LIPPO PLAZA JAMBI"
+   "name": "13-LIPPO PLAZA JAMBI",
+   "lat": -1.613,
+   "lng": 103.611,
+   "city": "Jambi"
   },
   "14": {
    "region": "REGION 4",
    "target": 14,
-   "name": "14-MALL LIPPO CIKARANG"
+   "name": "14-MALL LIPPO CIKARANG",
+   "lat": -6.333,
+   "lng": 107.142,
+   "city": "Cikarang"
   },
   "16": {
    "region": "REGION 6",
    "target": 14,
-   "name": "16-LIPPO PLAZA BUTON"
+   "name": "16-LIPPO PLAZA BUTON",
+   "lat": -5.471,
+   "lng": 122.6,
+   "city": "Baubau"
   },
   "17": {
    "region": "REGION 4",
    "target": 12,
-   "name": "17-LIPPO PLAZA EKALOKASARI"
+   "name": "17-LIPPO PLAZA EKALOKASARI",
+   "lat": -6.624,
+   "lng": 106.813,
+   "city": "Bogor"
   },
   "19": {
    "region": "REGION 6",
    "target": 14,
-   "name": "19-LIPPO PLAZA KUPANG"
+   "name": "19-LIPPO PLAZA KUPANG",
+   "lat": -10.16,
+   "lng": 123.6,
+   "city": "Kupang"
   },
   "20": {
    "region": "REGION 2",
    "target": 14,
-   "name": "20-MALL OF SERANG"
+   "name": "20-MALL OF SERANG",
+   "lat": -6.118,
+   "lng": 106.151,
+   "city": "Serang"
   },
   "21": {
    "region": "REGION 6",
    "target": 14,
-   "name": "21-LIPPO PLAZA KENDARI"
+   "name": "21-LIPPO PLAZA KENDARI",
+   "lat": -3.99,
+   "lng": 122.517,
+   "city": "Kendari"
   },
   "22": {
    "region": "REGION 5",
    "target": 14,
-   "name": "22-JAVA SUPERMAL"
+   "name": "22-JAVA SUPERMAL",
+   "lat": -6.999,
+   "lng": 110.421,
+   "city": "Semarang"
   },
   "24": {
    "region": "REGION 5",
    "target": 14,
-   "name": "24-LIPPO PLAZA BATU"
+   "name": "24-LIPPO PLAZA BATU",
+   "lat": -7.872,
+   "lng": 112.525,
+   "city": "Batu"
   },
   "26": {
    "region": "REGION 4",
    "target": 14,
-   "name": "26-ISTANA PLAZA"
+   "name": "26-ISTANA PLAZA",
+   "lat": -6.908,
+   "lng": 107.597,
+   "city": "Bandung"
   },
   "27": {
    "region": "REGION 5",
    "target": 14,
-   "name": "27-MALANG TOWN SQUARE"
+   "name": "27-MALANG TOWN SQUARE",
+   "lat": -7.957,
+   "lng": 112.618,
+   "city": "Malang"
   },
   "28": {
    "region": "REGION 3",
    "target": 14,
-   "name": "28-CITIMALL SAMPIT"
+   "name": "28-CITIMALL SAMPIT",
+   "lat": -2.538,
+   "lng": 112.948,
+   "city": "Sampit"
   },
   "30": {
    "region": "REGION 6",
    "target": 14,
-   "name": "30-PLAZA RENON"
+   "name": "30-PLAZA RENON",
+   "lat": -8.673,
+   "lng": 115.238,
+   "city": "Denpasar"
   },
   "31": {
    "region": "REGION 3",
    "target": 14,
-   "name": "31-LIVING PLAZA BALIKPAPAN"
+   "name": "31-LIVING PLAZA BALIKPAPAN",
+   "lat": -1.265,
+   "lng": 116.83,
+   "city": "Balikpapan"
   },
   "32": {
    "region": "REGION 3",
    "target": 14,
-   "name": "32-PLUIT VILLAGE"
+   "name": "32-PLUIT VILLAGE",
+   "lat": -6.11,
+   "lng": 106.791,
+   "city": "Jakarta"
   },
   "33": {
    "region": "REGION 2",
    "target": 14,
-   "name": "33-LIPPO PLAZA LUBUK LINGGAU"
+   "name": "33-LIPPO PLAZA LUBUK LINGGAU",
+   "lat": -3.296,
+   "lng": 102.862,
+   "city": "Lubuk Linggau"
   },
   "34": {
    "region": "REGION 5",
    "target": 14,
-   "name": "34-PACIFIC MALL TEGAL"
+   "name": "34-PACIFIC MALL TEGAL",
+   "lat": -6.872,
+   "lng": 109.139,
+   "city": "Tegal"
   },
   "35": {
    "region": "REGION 4",
    "target": 14,
-   "name": "35-LIPPO PLAZA KEBOEN RAYA BOGOR"
+   "name": "35-LIPPO PLAZA KEBOEN RAYA BOGOR",
+   "lat": -6.6,
+   "lng": 106.798,
+   "city": "Bogor"
   },
   "37": {
    "region": "REGION 6",
    "target": 12,
-   "name": "37-MALL PHINISI POINT"
+   "name": "37-MALL PHINISI POINT",
+   "lat": -5.154,
+   "lng": 119.41,
+   "city": "Makassar"
   },
   "38": {
    "region": "REGION 4",
    "target": 12,
-   "name": "38-DEPOK TOWN SQUARE"
+   "name": "38-DEPOK TOWN SQUARE",
+   "lat": -6.372,
+   "lng": 106.832,
+   "city": "Depok"
   },
   "39": {
    "region": "REGION 4",
    "target": 14,
-   "name": "39-CIBUBUR JUNCTION"
+   "name": "39-CIBUBUR JUNCTION",
+   "lat": -6.3705,
+   "lng": 106.893,
+   "city": "Cibubur"
   },
   "40": {
    "region": "REGION 2",
    "target": 14,
-   "name": "40-KALIBATA CITY SQUARE"
+   "name": "40-KALIBATA CITY SQUARE",
+   "lat": -6.256,
+   "lng": 106.853,
+   "city": "Jakarta"
   },
   "41": {
    "region": "REGION 1",
    "target": 14,
-   "name": "41-PLAZA MEDAN FAIR"
+   "name": "41-PLAZA MEDAN FAIR",
+   "lat": 3.585,
+   "lng": 98.66,
+   "city": "Medan"
   },
   "42": {
    "region": "REGION 3",
    "target": 14,
-   "name": "42-CITIMALL KETAPANG"
+   "name": "42-CITIMALL KETAPANG",
+   "lat": -1.8467,
+   "lng": 109.9722,
+   "city": "Ketapang"
   },
   "43": {
    "region": "REGION 5",
    "target": 14,
-   "name": "43-LIPPO PLAZA JEMBER"
+   "name": "43-LIPPO PLAZA JEMBER",
+   "lat": -8.17,
+   "lng": 113.7,
+   "city": "Jember"
   },
   "44": {
    "region": "REGION 4",
    "target": 14,
-   "name": "44-TAMINI SQUARE"
+   "name": "44-TAMINI SQUARE",
+   "lat": -6.291,
+   "lng": 106.882,
+   "city": "Jakarta"
   },
   "45": {
    "region": "REGION 3",
    "target": 14,
-   "name": "45-Q MALL BANJARBARU"
+   "name": "45-Q MALL BANJARBARU",
+   "lat": -3.441,
+   "lng": 114.831,
+   "city": "Banjarbaru"
   },
   "47": {
    "region": "REGION 2",
    "target": 14,
-   "name": "47-CITIMALL PRABUMULIH"
+   "name": "47-CITIMALL PRABUMULIH",
+   "lat": -3.432,
+   "lng": 104.235,
+   "city": "Prabumulih"
   },
   "49": {
    "region": "REGION 1",
    "target": 12,
-   "name": "49-LIVING WORLD PEKANBARU"
+   "name": "49-LIVING WORLD PEKANBARU",
+   "lat": 0.468,
+   "lng": 101.409,
+   "city": "Pekanbaru"
   },
   "50": {
    "region": "REGION 1",
    "target": 14,
-   "name": "50-MAL BOTANIA 2"
+   "name": "50-MAL BOTANIA 2",
+   "lat": 1.13,
+   "lng": 104.03,
+   "city": "Batam"
   },
   "51": {
    "region": "REGION 6",
    "target": 14,
-   "name": "51-LIPPO PLAZA SUNSET"
+   "name": "51-LIPPO PLAZA SUNSET",
+   "lat": -8.699,
+   "lng": 115.173,
+   "city": "Kuta"
   },
   "52": {
    "region": "REGION 6",
    "target": 14,
-   "name": "52-SIDEWALK JIMBARAN"
+   "name": "52-SIDEWALK JIMBARAN",
+   "lat": -8.782,
+   "lng": 115.168,
+   "city": "Jimbaran"
   },
   "53": {
    "region": "REGION 5",
    "target": 14,
-   "name": "53-CITY OF TOMORROW"
+   "name": "53-CITY OF TOMORROW",
+   "lat": -7.329,
+   "lng": 112.731,
+   "city": "Surabaya"
   },
   "54": {
    "region": "REGION 1",
    "target": 14,
-   "name": "54-MAL MANDAU CITY"
+   "name": "54-MAL MANDAU CITY",
+   "lat": 1.283,
+   "lng": 101.23,
+   "city": "Duri"
   },
   "56": {
    "region": "REGION 2",
    "target": 14,
-   "name": "56-GAJAH MADA PLAZA"
+   "name": "56-GAJAH MADA PLAZA",
+   "lat": -6.161,
+   "lng": 106.818,
+   "city": "Jakarta"
   },
   "57": {
    "region": "REGION 4",
    "target": 14,
-   "name": "57-DISTRIK 1 MEIKARTA"
+   "name": "57-DISTRIK 1 MEIKARTA",
+   "lat": -6.3175,
+   "lng": 107.168,
+   "city": "Cikarang"
   },
   "58": {
    "region": "REGION 1",
    "target": 14,
-   "name": "58-BINJAI SUPERMALL"
+   "name": "58-BINJAI SUPERMALL",
+   "lat": 3.6006,
+   "lng": 98.4854,
+   "city": "Binjai"
   },
   "60": {
    "region": "REGION 5",
    "target": 14,
-   "name": "60-LIPPO PLAZA SIDOARJO"
+   "name": "60-LIPPO PLAZA SIDOARJO",
+   "lat": -7.45,
+   "lng": 112.701,
+   "city": "Sidoarjo"
   },
   "61": {
    "region": "REGION 2",
    "target": 14,
-   "name": "61-MANGGA DUA SQUARE"
+   "name": "61-MANGGA DUA SQUARE",
+   "lat": -6.136,
+   "lng": 106.83,
+   "city": "Jakarta"
   },
   "62": {
    "region": "REGION 3",
    "target": 12,
-   "name": "62-THE PARK PEJATEN"
+   "name": "62-THE PARK PEJATEN",
+   "lat": -6.272,
+   "lng": 106.829,
+   "city": "Jakarta"
   },
   "63": {
    "region": "REGION 4",
    "target": 14,
-   "name": "63-BLU PLAZA BEKASI"
+   "name": "63-BLU PLAZA BEKASI",
+   "lat": -6.249,
+   "lng": 107.017,
+   "city": "Bekasi"
   },
   "64": {
    "region": "REGION 1",
    "target": 14,
-   "name": "64-SIANTAR CITY SQUARE"
+   "name": "64-SIANTAR CITY SQUARE",
+   "lat": 2.96,
+   "lng": 99.062,
+   "city": "Pematangsiantar"
   },
   "65": {
    "region": "REGION 1",
    "target": 14,
-   "name": "65-MALL PEKANBARU"
+   "name": "65-MALL PEKANBARU",
+   "lat": 0.526,
+   "lng": 101.447,
+   "city": "Pekanbaru"
   },
   "66": {
    "region": "REGION 4",
    "target": 14,
-   "name": "66-PONDOK KELAPA TOWN SQUARE"
+   "name": "66-PONDOK KELAPA TOWN SQUARE",
+   "lat": -6.239,
+   "lng": 106.938,
+   "city": "Jakarta"
   },
   "67": {
    "region": "REGION 3",
    "target": 14,
-   "name": "67-KEBAYORAN PARK MALL"
+   "name": "67-KEBAYORAN PARK MALL",
+   "lat": -6.242,
+   "lng": 106.784,
+   "city": "Jakarta"
   },
   "68": {
    "region": "REGION 2",
    "target": 14,
-   "name": "68-CITIPLAZA KUTABUMI"
+   "name": "68-CITIPLAZA KUTABUMI",
+   "lat": -6.1845,
+   "lng": 106.572,
+   "city": "Tangerang"
   },
   "69": {
    "region": "REGION 3",
    "target": 12,
-   "name": "69-SENAYAN PARK"
+   "name": "69-SENAYAN PARK",
+   "lat": -6.21,
+   "lng": 106.799,
+   "city": "Jakarta"
   },
   "70": {
    "region": "REGION 3",
    "target": 14,
-   "name": "70-MALL THE GALERIA"
+   "name": "70-MALL THE GALERIA",
+   "lat": -8.725,
+   "lng": 115.18,
+   "city": "Bali (perlu dicek)"
   },
   "71": {
    "region": "REGION 1",
    "target": 14,
-   "name": "71-K-SQUARE BATAM"
+   "name": "71-K-SQUARE BATAM",
+   "lat": 1.121,
+   "lng": 104.048,
+   "city": "Batam"
   },
   "72": {
    "region": "REGION 6",
    "target": 14,
-   "name": "72-PARAGON SQUARE MALL"
+   "name": "72-PARAGON SQUARE MALL",
+   "lat": -0.879,
+   "lng": 131.261,
+   "city": "Sorong (perlu dicek)"
   }
  }
 }

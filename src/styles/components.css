@@ -142,7 +142,7 @@ td.site .tag{margin-left:6px}
 .legend{display:flex;flex-wrap:wrap;gap:var(--s4);font-size:var(--t-footnote);color:var(--label-2)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.hbars{display:grid;gap:12px}
+.hbars{display:grid;gap:12px;align-content:start}
 .hbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;cursor:pointer}
 .hbar:hover .t{color:var(--blue-text)}
 .hbar .t{font-size:var(--t-subhead);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -382,3 +382,51 @@ body.locked .content{display:grid;place-items:start center;padding-top:8vh}
 .rc-s{font-size:var(--t-footnote);color:var(--label-2)}
 .btable td.site .sub{display:block;font-size:var(--t-footnote);font-weight:400}
 @media (max-width:640px){.bh-v b{font-size:30px}.bprog.sm{width:70px}}
+
+/* Status tiles (Ringkasan) */
+.stiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--s3)}
+.stile{all:unset;cursor:pointer;box-sizing:border-box;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);padding:var(--s4) var(--s5);display:grid;gap:4px;align-content:start;border-top:4px solid var(--fill);transition:transform .15s var(--ease),box-shadow .15s}
+.stile:hover{transform:translateY(-1px);box-shadow:var(--shadow-pop,var(--shadow))} .stile:focus-visible{outline:2px solid var(--blue)}
+.stile.good{border-top-color:var(--green)} .stile.warn{border-top-color:var(--orange)} .stile.bad{border-top-color:var(--red)}
+.st-k{font-size:var(--t-subhead);color:var(--label-2);font-weight:600;display:flex;align-items:center;gap:6px} .st-k svg{width:15px;height:15px;color:var(--blue)}
+.st-v{font-family:var(--font-round);font-size:30px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.st-v small{font-size:14px;font-weight:600;color:var(--label-2);letter-spacing:0}
+.stile.bad .st-v{color:var(--red-text)} .stile.warn .st-v{color:var(--orange-text)}
+.st-s{font-size:var(--t-footnote);color:var(--label-2);line-height:1.4}
+.st-go{font-size:var(--t-footnote);color:var(--blue-text);font-weight:600;margin-top:2px}
+
+/* Map */
+.sitemap{width:100%;border-radius:12px;overflow:hidden;background:var(--fill);z-index:0}
+.mapcard{gap:var(--s3)}
+.leaflet-tooltip{font-family:inherit;font-size:12px;line-height:1.45;border-radius:8px;border:0;box-shadow:var(--shadow-pop,0 4px 16px rgba(0,0,0,.15))}
+.leaflet-container{font-family:inherit}
+
+/* Top sites */
+.toplist{display:grid;gap:2px}
+.toprow{all:unset;cursor:pointer;display:grid;grid-template-columns:24px minmax(0,1fr) 110px 70px;align-items:center;gap:10px;padding:8px 6px;border-radius:10px}
+.toprow:hover{background:var(--fill)} .toprow:focus-visible{outline:2px solid var(--blue)}
+.tr-n{font-weight:700;color:var(--label-3);text-align:center;font-variant-numeric:tabular-nums}
+.tr-t{display:grid;min-width:0} .tr-t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .tr-t small{color:var(--label-2);font-size:var(--t-footnote)}
+.tr-bar{height:8px;border-radius:4px;background:var(--fill);overflow:hidden} .tr-bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
+.tr-v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums} .tr-v small{font-weight:500;color:var(--label-2)}
+@media (max-width:640px){.toprow{grid-template-columns:20px minmax(0,1fr) 60px}.tr-bar{display:none}}
+
+/* Sites table */
+.stable td.site .sub,.table-wrap td .sub{display:block;font-size:var(--t-footnote);font-weight:400}
+.spark{display:inline-flex;align-items:flex-end;gap:1px;height:22px;width:120px}
+.spark i{flex:1;min-width:2px;background:var(--blue);border-radius:1px 1px 0 0}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:700;font-variant-numeric:tabular-nums}
+.pill small{font-weight:500;opacity:.75}
+.pill.ok{background:var(--green-tint);color:var(--green-text)} .pill.warn{background:var(--orange-tint);color:var(--orange-text)} .pill.bad{background:var(--red-tint);color:var(--red-text)}
+
+/* Sub pages embedded in Cek Harian / Site */
+.subpage{display:grid;gap:var(--s4);min-width:0}
+.subpage .large-title h1{font-size:22px}
+
+/* Budget transfer */
+.trform{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--s3);align-items:end}
+.trform label{display:grid;gap:4px;font-size:var(--t-footnote);color:var(--label-2);font-weight:600}
+.trform select,.trform input{width:100%;box-sizing:border-box;font-size:var(--t-callout);color:var(--label)}
+.trform .wide{grid-column:1/-1}
+.trprev{background:var(--fill);border-radius:10px;padding:10px 12px;font-size:var(--t-subhead);line-height:1.5}
+.trprev .bad,.bad{color:var(--red-text)}

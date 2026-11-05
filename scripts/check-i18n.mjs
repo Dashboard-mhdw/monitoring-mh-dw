@@ -14,12 +14,12 @@ for (const f of [...files, "index.html"]) {
   for (const m of s.matchAll(/data-i18n(?:-aria|-title)?="([^"]+)"/g)) used.add(m[1]);
 }
 // Keys built at runtime from fixed lists.
-["gMonitor", "gReports", "overview", "h1", "alert", "reasons", "sites", "daily", "budget", "trend", "map", "more"].forEach(k => used.add("nav." + k));
-["overview", "h1", "alert", "sites", "more"].forEach(k => used.add("tab." + k));
+["gMain", "gMore", "overview", "check", "h1", "alert", "reasons", "sites", "daily", "budget", "trend", "map", "more"].forEach(k => used.add("nav." + k));
+["overview", "check", "budget", "sites", "more"].forEach(k => used.add("tab." + k));
 
 ["over", "nobudget", "early", "near", "ok", "none"].forEach(k => used.add("bstat." + k));
 ["alert", "over", "nobudget", "h1", "other"].forEach(k => used.add("reason.ctx." + k));
-["admits", "nobar", "event", "kiosk", "other", "noreply", "sick", "training", "ops", "input"].forEach(k => used.add("reason.cat." + k));
+["nobar", "event", "backup", "admits", "kiosk", "training", "ops", "input", "other", "noreply", "sick"].forEach(k => used.add("reason.cat." + k));
 ["sheet", "local", "pending"].forEach(k => used.add("reason.saved." + k));
 ["recent", "sites", "pages", "months", "notes", "downloads", "dates"].forEach(k => used.add("search.g." + k));
 ["month", "csv", "alert", "budget", "trend", "reasons", "daily"].forEach(k => used.add("search.dl." + k));

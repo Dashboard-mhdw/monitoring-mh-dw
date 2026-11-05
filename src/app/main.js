@@ -17,23 +17,28 @@ import budget from "./features/budget.js";
 import trend from "./features/trend.js";
 import daily from "./features/daily.js";
 import map from "./features/map.js";
+import check from "./features/check.js";
 import more from "./features/more.js";
 import reasonsView, { openReason, exportReasons, needCount } from "./features/reasons.js";
 import { loadReasons, onReasons } from "./reasons.js";
 import { openSearch, wireSearch, shortcutLabel } from "./features/search.js";
 
-const FEATURES = {overview, h1, alert, reasons: reasonsView, sites, daily, budget, trend, map, more};
+const FEATURES = {overview, check, h1, alert, reasons: reasonsView, sites, daily, budget, trend, map, more};
 
 // Navigation model — one source for sidebar and tab bar.
 const NAV = [
-  {group: "nav.gMonitor", items: [["overview", ICON.grid], ["h1", ICON.checklist, "h1"], ["alert", ICON.alert, "alert"], ["reasons", ICON.note, "reasons"]]},
-  {group: "nav.gReports", items: [["sites", ICON.sites], ["daily", ICON.table], ["budget", ICON.budget], ["trend", ICON.trend], ["map", ICON.map]]},
+  {group: "nav.gMain", items: [["overview", ICON.grid], ["check", ICON.alert, "check"], ["budget", ICON.budget], ["sites", ICON.sites], ["trend", ICON.trend], ["reasons", ICON.note, "reasons"]]},
+  {group: "nav.gMore", items: [["map", ICON.map]]},
 ];
-const TABS = [["overview", ICON.grid, "tab.overview"], ["h1", ICON.checklist, "tab.h1", "h1"], ["alert", ICON.alert, "tab.alert", "alert"], ["sites", ICON.sites, "tab.sites"], ["more", ICON.more, "tab.more"]];
-const badges = {h1: 0, alert: 0, reasons: 0};
+const TABS = [["overview", ICON.grid, "tab.overview"], ["check", ICON.alert, "tab.check", "check"], ["budget", ICON.budget, "tab.budget"], ["sites", ICON.sites, "tab.sites"], ["more", ICON.more, "tab.more"]];
+// Old page ids (bookmarks / saved state) → new pages
+const ALIAS = {h1: "check", alert: "check", daily: "sites"};
+const badges = {check: 0, reasons: 0};
 
 const app = {
-  go(view) {
+  go(view, sub) {
+    if (ALIAS[view]) { if (view === "h1" || view === "alert") state.checkTab = view; if (view === "daily") state.siteView = "daily"; view = ALIAS[view]; }
+    if (sub) { if (view === "check") state.checkTab = sub; if (view === "sites") state.siteView = sub; }
     if (!FEATURES[view]) return;
     state.view = view; persist();
     window.scrollTo(0, 0);
@@ -50,7 +55,7 @@ const app = {
 /* ---------- Shell ---------- */
 function renderChrome() {
   const badge = k => k && badges[k] ? `<span class="badge">${badges[k]}</span>` : "";
-  const cur = v => (v === state.view || (state.view !== "more" && v === "more" && ["daily", "budget", "trend", "map", "reasons"].includes(state.view))) ? ' aria-current="page"' : "";
+  const cur = v => (v === state.view || (state.view !== "more" && v === "more" && ["trend", "map", "reasons"].includes(state.view))) ? ' aria-current="page"' : "";
   $("sideNav").innerHTML = NAV.map(g => `<div class="side-label">${t(g.group)}</div>` +
     g.items.map(([v, ic, b]) => `<button class="nav-item" type="button" data-go="${v}"${v === state.view ? ' aria-current="page"' : ""}>${ic}<span>${t("nav." + v)}</span>${badge(b)}</button>`).join("")).join("");
   $("tabbar").innerHTML = TABS.map(([v, ic, l, b]) => `<button type="button" data-go="${v}"${cur(v)}>${ic}${t(l)}${badge(b)}</button>`).join("");
@@ -102,7 +107,7 @@ function wireGlobal() {
   document.addEventListener("click", e => {
     const el = e.target.closest && e.target.closest("[data-go],[data-site],[data-act],[data-lang],[data-thm]");
     if (!el) return;
-    if (el.dataset.go) return app.go(el.dataset.go);
+    if (el.dataset.go) return app.go(el.dataset.go, el.dataset.sub);
     if (el.dataset.lang) return setLang(el.dataset.lang);
     if (el.dataset.thm) { state.theme = el.dataset.thm; persist(); applyTheme(); renderChrome(); if (state.view === "more") render(); return; }
     if (el.dataset.act === "search") return openSearch(app);
@@ -110,7 +115,7 @@ function wireGlobal() {
     if (el.dataset.act === "reasons-xlsx") return exportReasons();
     if (el.dataset.act && ACTIONS[el.dataset.act]) return ACTIONS[el.dataset.act]();
     if (el.dataset.site) {
-      const key = el.dataset.month || (state.view === "h1" ? state.h1Date.slice(0, 7) : state.month);
+      const key = el.dataset.month || (state.view === "check" ? state.h1Date.slice(0, 7) : state.month);
       return openSite(el.dataset.site, key);
     }
   });
@@ -123,7 +128,7 @@ function wireGlobal() {
 /* ---------- Boot ---------- */
 function showGate() {
   document.body.classList.add("locked");
-  badges.h1 = badges.alert = badges.reasons = 0;
+  badges.check = badges.reasons = 0;
   setSync("", ""); $("dataStamp").textContent = "";
   renderChrome();
   document.title = "Monitoring MH DW";
@@ -136,8 +141,7 @@ async function boot() {
     await loadAll();
     fillMonths();
     const miss = missingOn(YESTERDAY), al = alertsOn(YESTERDAY);
-    badges.h1 = miss ? miss.bySite.size : 0;
-    badges.alert = al ? al.flagged.length : 0;
+    badges.check = (miss ? miss.bySite.size : 0) + (al ? al.flagged.length : 0);
     renderChrome(); render(); syncStatus();
     loadReasons();
     document.body.classList.remove("locked");

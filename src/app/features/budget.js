@@ -1,7 +1,8 @@
 // Budget vs Actual — DW man-hours to date against the weekly budget (budget.json).
 import { t } from "../i18n.js";
-import { fmt, signed, monthName, monthOnly, monthEnd, dateLong, YESTERDAY } from "../format.js";
-import { esc, ICON, on, copyText, copyRich } from "../ui/dom.js";
+import { reasons, addTransfer, cancelTransfer } from "../reasons.js";
+import { fmt, signed, monthName, monthOnly, monthEnd, dateLong, YESTERDAY, rp } from "../format.js";
+import { esc, ICON, on, copyText, copyRich, hud } from "../ui/dom.js";
 import * as Mail from "./budget-mail.js";
 import { header, kpi, kpis, notice, segmented, btn, tag, legend } from "../ui/components.js";
 import { groupedChart } from "../ui/charts.js";
@@ -20,7 +21,7 @@ export function cutFor(key) {
   let c = state.budgetCut && state.budgetCut.slice(0, 7) === key ? state.budgetCut : (YESTERDAY < end ? YESTERDAY : end);
   return c < start ? start : c;
 }
-export const bvaCurrent = () => budgetVsActual(state.month, cutFor(state.month));
+export const bvaCurrent = () => budgetVsActual(state.month, cutFor(state.month), reasons.transfers);
 
 const diff = v => v > 0.5 ? `<span class="delta bad">${signed(v)}</span>` : v < -0.5 ? `<span class="delta down">${fmt(v)}</span>` : `<span class="muted">0</span>`;
 const meter = u => {
@@ -66,11 +67,6 @@ function openBudgetSite(r, code) {
     reasonSection({site: x.code, cinema: x.cinema, date: r.cut, month: r.month, context: x.status === "over" ? "over" : x.status === "nobudget" || x.status === "early" ? "nobudget" : "other"})});
 }
 
-const rp = v => {   // compact Rupiah: Rp 9,4 jt / Rp 950 rb
-  if (v == null || isNaN(v)) return "–";
-  const a = Math.abs(v), sg = v < 0 ? "−" : "";
-  return a >= 1e9 ? `${sg}Rp ${fmt(a / 1e9, 2)} M` : a >= 1e6 ? `${sg}Rp ${fmt(a / 1e6, 1)} jt` : a >= 1e3 ? `${sg}Rp ${fmt(a / 1e3)} rb` : `${sg}Rp ${fmt(a)}`;
-};
 const rpFull = v => "Rp " + fmt(v);
 const daysIn = key => +monthEnd(key).slice(8);
 
@@ -80,6 +76,61 @@ const progress = (used, plan, total, cls = "") => {
   const col = used > plan * 1.0001 && plan > 0 ? "var(--red)" : total && used / total >= 0.9 ? "var(--orange)" : "var(--green)";
   return `<div class="bprog ${cls}"><i style="width:${u}%;background:${col}"></i>${plan ? `<b style="left:${pl}%" title="${t("budget.planMark")}"></b>` : ""}</div>`;
 };
+
+/** "Pindah budget" — move MH DW between sites in the user's own region; the server converts with each site's rate. */
+function transferSection(r, key) {
+  const sheetMonth = reasons.budgetMonth, monthOk = !sheetMonth || +key.slice(5) === +sheetMonth;
+  const rows = r.rows.filter(x => x.rate).sort((a, b) => a.cinema.localeCompare(b.cinema, undefined, {numeric: true}));
+  const opt = (x, sel) => `<option value="${x.code}"${sel ? " selected" : ""}>${esc(x.cinema)} · ${t("budget.trLeftOpt", {v: fmt(x.budgetMonth - x.actual, 1)})}</option>`;
+  const list = reasons.transfers.filter(x => x.month === key);
+  const body = !reasons.online ? notice(t("budget.trOffline"), t("budget.trOfflineSub"), "warn")
+    : !monthOk ? notice(t("budget.trWrongMonth", {m: monthName(key)}), "", "warn")
+    : `<form class="trform" id="trForm" autocomplete="off">
+        <label><span>${t("budget.trFrom")}</span><select id="trFrom" class="popup">${rows.filter(x => x.budgetMonth > 0).map((x, i) => opt(x, i === 0)).join("")}</select></label>
+        <label><span>${t("budget.trTo")}</span><select id="trTo" class="popup">${rows.map((x, i) => opt(x, i === 1)).join("")}</select></label>
+        <label><span>${t("budget.trMh")}</span><input id="trMh" type="number" min="0.5" step="0.5" class="datefield" placeholder="10"></label>
+        <label class="wide"><span>${t("budget.trReason")}</span><input id="trWhy" type="text" class="datefield" placeholder="${esc(t("budget.trReasonPh"))}"></label>
+        <label><span>${t("budget.trBy")}</span><input id="trBy" type="text" class="datefield" value="${esc(reasons.lastBy)}"></label>
+        <div class="trprev wide" id="trPrev" role="status"></div>
+        <div class="wide"><button type="submit" class="btn filled" id="trGo">${t("budget.trGo")}</button></div>
+      </form>`;
+  const hist = list.length ? `<div class="table-wrap"><table><thead><tr><th>${t("budget.trWhen")}</th><th>${t("budget.trFrom")}</th><th>${t("budget.trTo")}</th><th class="r">${t("budget.trMhCol")}</th><th class="r">Rp</th><th>${t("budget.trReason")}</th><th>${t("budget.trBy")}</th><th>Status</th><th></th></tr></thead>
+      <tbody>${list.map(x => `<tr><td>${esc(x.ts.slice(0, 16).replace("T", " "))}</td><td>${esc(x.fromName)}<span class="muted sub">${fmt(x.fromBefore, 1)} → ${fmt(x.fromAfter, 1)}</span></td><td>${esc(x.toName)}<span class="muted sub">${fmt(x.toBefore, 1)} → ${fmt(x.toAfter, 1)}</span></td>
+        <td class="r">−${fmt(x.mh, 1)} / +${fmt(x.mhTo, 1)}</td><td class="r">${rp(x.amount)}</td><td>${esc(x.reason)}</td><td>${esc(x.by)}</td>
+        <td>${x.status === "ok" ? tag(t("budget.trOk"), "green") : tag(esc(x.status), "")}</td><td>${x.status === "ok" ? `<button type="button" class="btn plain" data-trcancel="${esc(x.id)}">${t("budget.trCancel")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="muted">${t("budget.trNone")}</p>`;
+  return `<div class="card" id="trCard"><div class="card-head"><h2>${t("budget.trTitle")}</h2></div><p class="muted" style="margin:0">${t("budget.trSub")}</p>${body}<h3 style="margin:var(--s3) 0 0">${t("budget.trHist")}</h3>${hist}</div>`;
+}
+
+function wireTransfer(c, r, app) {
+  const f = c.querySelector("#trForm"); if (!f) { on(c, "[data-trcancel]", "click", b => doCancel(b, app)); return; }
+  const by = code => r.rows.find(x => x.code === code);
+  const prev = () => {
+    const a = by(f.querySelector("#trFrom").value), b = by(f.querySelector("#trTo").value), mh = +f.querySelector("#trMh").value || 0, el = f.querySelector("#trPrev");
+    if (!a || !b || !mh) { el.innerHTML = `<span class="muted">${t("budget.trHint")}</span>`; return; }
+    if (a.code === b.code) { el.innerHTML = `<span class="bad">${t("budget.trSame")}</span>`; return; }
+    const mhTo = Math.round(mh * a.rate / b.rate * 10) / 10, amt = mh * a.rate;
+    el.innerHTML = t("budget.trPreview", {mh: fmt(mh, 1), a: esc(a.cinema), ra: fmt(a.rate), amt: rp(amt), mhTo: fmt(mhTo, 1), b: esc(b.cinema), rb: fmt(b.rate),
+      la: fmt(a.budgetMonth - mh, 1), lb: fmt(b.budgetMonth + mhTo, 1)}) + (mh > a.budgetMonth + 1e-9 ? `<br><span class="bad">${t("budget.trTooMuch", {v: fmt(a.budgetMonth, 1)})}</span>` : "");
+  };
+  f.addEventListener("input", prev); prev();
+  f.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const go = f.querySelector("#trGo"), from = f.querySelector("#trFrom").value, to = f.querySelector("#trTo").value, mh = +f.querySelector("#trMh").value || 0;
+    if (!mh || from === to) return;
+    go.disabled = true; go.textContent = t("budget.trSaving");
+    const res = await addTransfer({month: r.month, from, to, mh, reason: f.querySelector("#trWhy").value.trim(), by: f.querySelector("#trBy").value.trim()});
+    if (res.ok) { hud(t("budget.trDone", {mh: fmt(mh, 1), mhTo: fmt(res.mhTo, 1)})); app.rerender(); }
+    else { hud(t("budget.trFail", {e: res.error || "?"})); go.disabled = false; go.textContent = t("budget.trGo"); }
+  });
+  on(c, "[data-trcancel]", "click", b => doCancel(b, app));
+}
+async function doCancel(b, app) {
+  b.disabled = true;
+  const res = await cancelTransfer(b.dataset.trcancel, reasons.lastBy);
+  hud(res.ok ? t("budget.trCancelled") : t("budget.trFail", {e: res.error || "?"}));
+  app.rerender();
+}
 
 /** Region cards (admin): one card per region, click to filter the site table. */
 function regionCards(r, sel) {
@@ -103,7 +154,7 @@ export default {
     const tools = `<label class="muted" for="bvCut" style="font-size:var(--t-subhead)">${t("budget.until")}</label><input type="date" class="datefield" id="bvCut" value="${cut}" min="${key}-01" max="${monthEnd(key)}">`;
     const wireCut = () => on(c, "#bvCut", "change", el => { if (el.value) { state.budgetCut = el.value; app.rerender(); } });
     if (!store.budget) { c.innerHTML = header(title, monthName(key)) + notice(t("budget.noBudget"), t("budget.noBudgetSub")); return; }
-    const r = budgetVsActual(key, cut);
+    const r = budgetVsActual(key, cut, reasons.transfers);
     if (!r) { c.innerHTML = header(title, monthName(key), tools) + notice(t("budget.noMonth", {month: monthName(key)}), t("budget.noMonthSub")); wireCut(); return; }
 
     const T = r.tot, A = r.hasAdmits, admin = !store.access || store.access.scope === "ALL";
@@ -162,13 +213,14 @@ export default {
           <td>${x.status !== "none" ? reasonBtn({site: x.code, cinema: x.cinema, date: r.cut, month: key, context: x.status === "over" ? "over" : x.status === "nobudget" || x.status === "early" ? "nobudget" : "other"}) : ""}</td></tr>`).join("") || `<tr><td colspan="10" class="muted">${t("budget.emptyFilter")}</td></tr>`}</tbody>
         <tfoot><tr><td>${t("budget.totalRow", {n: list.length})}</td><td class="r">${fmt(list.reduce((a, x) => a + (x.ft || 0), 0))}</td><td></td><td class="r">${fmt(list.reduce((a, x) => a + x.budgetMonth, 0))}</td><td class="r">${fmt(list.reduce((a, x) => a + x.actual, 0))}</td><td></td><td class="r">${fmt(list.reduce((a, x) => a + x.remaining, 0))}</td><td class="r">${rp(list.reduce((a, x) => a + (x.amountRemaining || 0), 0))}</td><td></td><td></td></tr></tfoot>
       </table></div>
-      <p class="foot">${t("budget.footNew")} ${r.source ? t("budget.source", {s: esc(r.source)}) : ""}</p>
+      <p class="foot">${t("budget.footNew")} ${r.source ? t("budget.source", {s: esc(r.source)}) : ""}${r.pendingTransfers ? " " + t("budget.trPending", {n: r.pendingTransfers}) : ""}</p>
+      ${transferSection(r, key)}
       ${!admin ? "" : `<div class="row" style="margin-top:var(--s4)"><h2 class="section-head" style="margin:0">${t("budget.mailTitle")}</h2><span class="spacer"></span>
         ${btn(t("budget.copySubject"), {id: "bmSubj", icon: ICON.copy})}${btn(t("budget.copyMail"), {id: "bmCopy", filled: true, icon: ICON.copy})}</div>
       <p class="foot" style="margin-top:-8px">${t("budget.mailNote")}</p>
       <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(Mail.subject(r))}</p>${Mail.mailHTML(r)}</div>`}`;
 
-    wireCut();
+    wireCut(); wireTransfer(c, r, app);
     on(c, "[data-breg]", "click", b => { state.budgetRegion = b.dataset.breg; app.rerender(); });
     on(c, "[data-bf]", "click", b => { state.budgetFilter = b.dataset.bf; app.rerender(); });
     on(c, "[data-bsite]", "click", row => openBudgetSite(r, row.dataset.bsite));

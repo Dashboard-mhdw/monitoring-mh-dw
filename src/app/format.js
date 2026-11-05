@@ -36,3 +36,10 @@ export const dateEN = iso => { const d = asDate(iso); return `${EN_DAY[d.getDay(
 export const dateShortEN = iso => { const d = asDate(iso); return `${d.getDate()} ${EN_MON[d.getMonth()].slice(0, 3)}`; };
 export const f1 = v => v == null ? "–" : (Math.round(v * 10) / 10).toFixed(1);
 export const fInt = v => v == null ? "–" : String(Math.round(v));
+
+/** Compact Rupiah: Rp 9,4 jt / Rp 950 rb. */
+export const rp = v => {
+  if (v == null || isNaN(v)) return "–";
+  const a = Math.abs(v), sg = v < 0 ? "−" : "";
+  return a >= 1e9 ? `${sg}Rp ${fmt(a / 1e9, 2)} M` : a >= 1e6 ? `${sg}Rp ${fmt(a / 1e6, 1)} jt` : a >= 1e3 ? `${sg}Rp ${fmt(a / 1e3)} rb` : `${sg}Rp ${fmt(a)}`;
+};

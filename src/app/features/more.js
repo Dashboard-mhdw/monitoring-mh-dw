@@ -6,7 +6,7 @@ import { header, segmented } from "../ui/components.js";
 import { state } from "../state.js";
 import { SHEET_URL } from "./shared.js";
 
-const PAGES = [["daily", "blue", ICON.table], ["reasons", "blue", ICON.note], ["budget", "green", ICON.budget], ["trend", "indigo", ICON.trend], ["map", "orange", ICON.map]];
+const PAGES = [["trend", "indigo", ICON.trend], ["reasons", "blue", ICON.note], ["map", "orange", ICON.map]];
 
 export default {
   id: "more",

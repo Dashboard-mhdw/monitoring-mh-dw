@@ -1,9 +1,9 @@
 // UI state — what the user is looking at. Persisted bits: view and theme.
 import { YESTERDAY } from "./format.js";
 
-export const VIEWS = ["overview", "h1", "alert", "reasons", "sites", "daily", "budget", "trend", "map", "more"];
+export const VIEWS = ["overview", "check", "budget", "sites", "trend", "reasons", "map", "more"];
 /** Views whose content depends on the month picker. */
-export const MONTH_VIEWS = ["overview", "sites", "daily", "map", "budget", "reasons"];
+export const MONTH_VIEWS = ["overview", "sites", "map", "budget", "reasons"];
 
 /** Monday → Friday (covers Fri–Sun); other days → yesterday. */
 export function defaultAlertFrom() {
@@ -14,6 +14,8 @@ export function defaultAlertFrom() {
 
 export const state = {
   view: "overview",
+  checkTab: "alert",               // Cek Harian: "alert" | "h1"
+  siteView: "month",               // Site: "month" | "daily"
   month: YESTERDAY.slice(0, 7),
   h1Date: YESTERDAY,
   alertDate: YESTERDAY,          // "sampai"
