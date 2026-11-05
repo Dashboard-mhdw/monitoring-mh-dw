@@ -55,8 +55,22 @@ async function call(body) {
 }
 async function post(body) { const j = await call(body); return !!(j && j.ok); }
 
-export async function loadReasons() {
-  try { const r = await fetch("config.json?t=" + Date.now(), {cache: "no-store"}); CFG = r.ok ? await r.json() : {}; } catch (e) { CFG = {}; }
+let sig = "", timer = null;
+const signature = () => JSON.stringify([LIST.map(n => n.id + (n.local ? "*" : "")).sort(), TRANSFERS.map(x => x.id + x.status).sort(), BUDGET_MONTH, MODE]);
+/** Someone is typing or a dialog is open — don't re-render under their hands. */
+const busy = () => { const a = document.activeElement; return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) || !!document.querySelector("dialog[open], .sheet.open, .modal.open"); };
+
+/** Near real-time: re-read the sheet every 30 s while the tab is visible, and right away when it comes back into view. */
+function startSync() {
+  if (timer) return;
+  const tick = () => { if (document.visibilityState === "visible" && endpoint() && token()) loadReasons({quiet: true}); };
+  timer = setInterval(tick, 30000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") tick(); });
+  addEventListener("online", tick);
+}
+
+export async function loadReasons({quiet = false} = {}) {
+  if (!quiet) { try { const r = await fetch("config.json?t=" + Date.now(), {cache: "no-store"}); CFG = r.ok ? await r.json() : {}; } catch (e) { CFG = {}; } }
   const pending = lsGet(LS_PENDING, []);
   if (!endpoint()) { MODE = "local"; ERR = null; LIST = pending.map(n => ({...n, local: true})); TRANSFERS = []; emit(); return; }
   try {
@@ -72,10 +86,15 @@ export async function loadReasons() {
     else if (toPush.length) remote = remote.concat(toPush.map(n => ({...n, local: true})));
     else lsSet(LS_PENDING, []);
     LIST = remote; MODE = "sheet"; ERR = null;
+    startSync();
   } catch (e) {
+    if (quiet && MODE === "sheet") return;   // a missed background poll keeps what we have
     MODE = "offline"; ERR = (e && e.message) || String(e);
     LIST = pending.map(n => ({...n, local: true}));
   }
+  const now = signature();
+  if (quiet && (now === sig || busy())) return;   // nothing new, or the user is mid-input → next poll
+  sig = now;
   emit();
 }
 
