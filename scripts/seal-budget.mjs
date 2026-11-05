@@ -16,6 +16,7 @@ const idx = fs.existsSync(idxPath) ? JSON.parse(fs.readFileSync(idxPath, "utf8")
 idx.budgetMonths = idx.budgetMonths || [];
 for (const f of files) {
   const b = JSON.parse(fs.readFileSync(f, "utf8"));
+  if (!b || !/^\d{4}-\d{2}$/.test(b.month || "") || !b.sites) { console.log(`skip ${f} (not a built budget month)`); continue; }
   const regionOf = c => (sites[c] && sites[c].region) || (b.sites[c] && b.sites[c].region) || null;
   const dir = path.join(ROOT, "secure", "b", b.month);
   fs.mkdirSync(dir, {recursive: true});
