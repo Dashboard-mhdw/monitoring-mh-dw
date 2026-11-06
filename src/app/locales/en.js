@@ -120,6 +120,7 @@ export default {
   // Budget
   "bstat.over": "Ahead of plan", "bstat.nobudget": "No budget", "bstat.early": "Used before schedule",
   "bstat.near": "Almost used up", "bstat.ok": "On track", "bstat.none": "Not used",
+  "lock.now": "Now showing", "lock.seat": "Seat", "lock.show": "Show", "lock.hide": "Hide", "lock.welcome": "Welcome, {who}! Enjoy the show 🍿",
   "lock.loading": "Opening data…",
   "lock.signOut": "Sign out",
   "budget.noBudget": "No budget data yet",

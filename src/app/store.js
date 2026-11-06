@@ -71,8 +71,8 @@ function setAccess(p, budget = null) {
   ACCESS = p ? {scope: p.scope, label: p.label, token: p.token || ""} : null;
 }
 
-/** Unlock the dashboard with a region/admin password. Resolves true when it matched (data loads on the next loadAll). */
-export async function unlock(password) { return !!(await Vault.unlock(password)); }
+/** Returns the access label ("Region 4", "Admin") when the password matches, otherwise false. */
+export async function unlock(password) { const e = await Vault.unlock(password); return e ? (e.label || "OK") : false; }
 
 /** Lock again: forget the password entry and all data in memory. */
 export function lock() { Vault.forget(); setAccess(null); DATA = null; cache = {}; }

@@ -120,6 +120,7 @@ export default {
   // Budget
   "bstat.over": "Melewati jadwal", "bstat.nobudget": "Tanpa budget", "bstat.early": "Pakai sebelum jadwal",
   "bstat.near": "Hampir habis", "bstat.ok": "Aman", "bstat.none": "Tidak pakai",
+  "lock.now": "Sedang tayang", "lock.seat": "Kursi", "lock.show": "Lihat", "lock.hide": "Tutup", "lock.welcome": "Selamat datang, {who}! Selamat menonton 🍿",
   "lock.loading": "Membuka data…",
   "lock.signOut": "Keluar",
   "budget.noBudget": "Belum ada data budget",
