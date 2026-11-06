@@ -38,7 +38,7 @@ export async function mountMap(el, points) {
   try { [L, G] = await Promise.all([loadLeaflet(), loadGeo()]); } catch (e) { el.innerHTML = `<p class="muted" style="padding:16px">Peta tidak bisa dimuat.</p>`; return null; }
   if (!el.isConnected) return null;
   el.innerHTML = "";
-  const map = L.map(el, {zoomControl: true, attributionControl: false, scrollWheelZoom: false, zoomSnap: 0.25, minZoom: 3.5, maxZoom: 11,
+  const map = L.map(el, {zoomControl: true, attributionControl: false, scrollWheelZoom: false, zoomSnap: 0.25, minZoom: 2.5, maxZoom: 11,
     maxBounds: [[-14, 90], [10, 145]], maxBoundsViscosity: 0.8}).setView([-2.5, 117.5], 4.5);
 
   const pts = points.filter(p => p.lat != null && p.lng != null);
@@ -52,18 +52,22 @@ export async function mountMap(el, points) {
     const best = new Map();
     pts.forEach(p => { const f = G.features.find(ft => inFeature(ft, p.lng, p.lat)); if (!f) return;
       const cur = best.get(f); if (cur == null || RANK[p.tone] > RANK[cur]) best.set(f, p.tone); });
-    const land = cssVar("--map-land"), line = cssVar("--map-line"), has = cssVar("--map-land-site");
-    L.geoJSON(G, {interactive: true, style: f => {
-      const tone = best.get(f), hot = tone === "red" || tone === "orange";
-      return {color: line, weight: 0.8, fillOpacity: 1, fillColor: hot ? cssVar(tone === "red" ? "--map-hot" : "--map-warm") : tone != null ? has : land};
-    }, onEachFeature: (f, layer) => layer.bindTooltip(esc(f.properties.n), {sticky: true, className: "prov-tip", direction: "auto"})}).addTo(map);
+    const land = cssVar("--map-land"), line = cssVar("--map-line"), has = cssVar("--map-land-site"), hover = cssVar("--map-land-hover");
+    map.createPane("land").style.zIndex = 350;
+    const fillOf = f => { const tone = best.get(f); return tone === "red" ? cssVar("--map-hot") : tone === "orange" ? cssVar("--map-warm") : tone != null ? has : land; };
+    L.geoJSON(G, {pane: "land", interactive: true, style: f => ({color: line, weight: 0.8, fillOpacity: 1, fillColor: fillOf(f)}),
+      onEachFeature: (f, layer) => {
+        layer.bindTooltip(esc(f.properties.n), {sticky: true, className: "prov-tip", direction: "auto"});
+        layer.on("mouseover", () => layer.setStyle({fillColor: best.get(f) === "red" || best.get(f) === "orange" ? fillOf(f) : hover, weight: 1.4}));
+        layer.on("mouseout", () => layer.setStyle({fillColor: fillOf(f), weight: 0.8}));
+      }}).addTo(map);
   }
 
   pts.sort((a, b) => RANK[a.tone] - RANK[b.tone]);   // important pins on top
   pts.forEach(p => {
-    const col = cssVar(TONE[p.tone] || "--blue"), r = 5 + Math.round((p.size || 0) * 9), hot = p.tone === "red" || p.tone === "orange";
+    const col = cssVar(TONE[p.tone] || "--blue"), r = 4 + Math.round((p.size || 0) * 7), hot = p.tone === "red" || p.tone === "orange";
     if (hot || p.tone === "blue") {   // soft glow
-      L.circleMarker([p._lat, p._lng], {radius: r + 7, stroke: false, fillColor: col, fillOpacity: .22, interactive: false}).addTo(map);
+      L.circleMarker([p._lat, p._lng], {radius: r + 6, stroke: false, fillColor: col, fillOpacity: .2, interactive: false}).addTo(map);
     }
     if (p.tone === "red") {           // pulsing ring
       L.marker([p._lat, p._lng], {interactive: false, keyboard: false,

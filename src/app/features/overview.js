@@ -48,7 +48,7 @@ export default {
       value: d.pkdw, cls: i > st.lastIdx ? "dim" : (d.pkdw > avg * 1.4 ? "hl" : ""),
       tick: (d.day === 1 || d.day % 5 === 0) ? String(d.day) : "",
       tip: `${dateLong(d.iso)}|${t("ov.tipPkdw", {v: fmt(d.pkdw), s: fmt(d.spkdw), tr: fmt(d.tpkdw)})}|${t("ov.tipSites", {n: d.dwSites, f: d.filled, r: T.rows})}`,
-    })), {avg, avgLabel: t("chart.avg"), aria: t("ov.daily")});
+    })), {W: 540, H: 330, avg, avgLabel: t("chart.avg"), aria: t("ov.daily")});
 
     const sites = st.sites.map(s => ({...s, region: (TG[s.code] || {}).region || "", target: (TG[s.code] || {}).target || 14, prod: s.total ? s.admits / s.total : null}));
     const top = sites.slice().filter(s => s.pkdw > 0).sort((a, b2) => b2.pkdw - a.pkdw).slice(0, 10), topMax = Math.max(1, ...top.map(s => s.pkdw));
@@ -72,13 +72,13 @@ export default {
         ${tile({tone: nMiss ? "warn" : "good", icon: ICON.checklist, label: t("ov.tMiss"), value: nMiss, unit: t("unit.sites"),
             line: nMiss ? t("ov.missLine", {d: dateShort(YESTERDAY), list: esc([...miss.bySite.values()].slice(0, 2).map(r => r[0].name).join(", ")) + (nMiss > 2 ? "…" : "")}) : t("ov.missNone", {d: dateShort(YESTERDAY)}), go: "check", sub: "h1"})}
       </div>
-      <div class="grid-2">
+      <div class="grid-2 even">
         <div class="card chart">
           <div class="card-head"><h2>${t("ov.daily")}</h2>${legend([["var(--blue)", "PKDW"], ["var(--orange)", t("ov.legendHigh")]])}</div>
           ${chart}
           <p class="foot" style="margin:0">${t("ov.dailyFoot", {avg: fmt(avg), n: st.lastIdx + 1})}</p>
         </div>
-        <div class="card mapcard"><div class="card-head"><h2>${t("ov.mapTitle")}</h2>${legend([["var(--red)", t("ov.lgHigh")], ["var(--orange)", t("ov.lgMid")], ["var(--blue)", t("ov.lgLow")], ["var(--map-pin-off)", t("ov.lgNone")]])}</div>${mapBox("ovMap", 330)}</div>
+        <div class="card mapcard"><div class="card-head"><h2>${t("ov.mapTitle")}</h2>${legend([["var(--red)", t("ov.lgHigh")], ["var(--orange)", t("ov.lgMid")], ["var(--blue)", t("ov.lgLow")], ["var(--map-pin-off)", t("ov.lgNone")]])}</div>${mapBox("ovMap", 340)}</div>
       </div>
       <div class="grid-2">
         <div class="card">
