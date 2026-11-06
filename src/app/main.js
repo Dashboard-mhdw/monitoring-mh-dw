@@ -18,16 +18,17 @@ import trend from "./features/trend.js";
 import daily from "./features/daily.js";
 import map from "./features/map.js";
 import check from "./features/check.js";
+import calc from "./features/calc.js";
 import more from "./features/more.js";
 import reasonsView, { openReason, exportReasons, needCount } from "./features/reasons.js";
 import { loadReasons, onReasons } from "./reasons.js";
 import { openSearch, wireSearch, shortcutLabel } from "./features/search.js";
 
-const FEATURES = {overview, check, h1, alert, reasons: reasonsView, sites, daily, budget, trend, map, more};
+const FEATURES = {overview, check, h1, alert, reasons: reasonsView, calc, sites, daily, budget, trend, map, more};
 
 // Navigation model — one source for sidebar and tab bar.
 const NAV = [
-  {group: "nav.gMain", items: [["overview", ICON.grid], ["check", ICON.alert, "check"], ["budget", ICON.budget], ["sites", ICON.sites], ["trend", ICON.trend], ["reasons", ICON.note, "reasons"]]},
+  {group: "nav.gMain", items: [["overview", ICON.grid], ["check", ICON.alert, "check"], ["budget", ICON.budget], ["calc", ICON.calc], ["sites", ICON.sites], ["trend", ICON.trend], ["reasons", ICON.note, "reasons"]]},
   {group: "nav.gMore", items: [["map", ICON.map]]},
 ];
 const TABS = [["overview", ICON.grid, "tab.overview"], ["check", ICON.alert, "tab.check", "check"], ["budget", ICON.budget, "tab.budget"], ["sites", ICON.sites, "tab.sites"], ["more", ICON.more, "tab.more"]];

@@ -70,6 +70,7 @@ export const ICON = {
   checklist: svg('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L6.5 5M3.5 12l1.2 1.2 1.8-2.2M4 18h1.5"/>', 1.9),
   alert: svg('<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.6v.01"/>', 1.9),
   sites: svg('<path d="M3 21V9l9-5 9 5v12"/><path d="M8 21v-6h8v6M3 21h18"/>', 1.9),
+  calc: svg('<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7h7M8.5 11h1M12 11h1M15.5 11h0M8.5 14.5h1M12 14.5h1M8.5 18h1M12 18h1M15.5 14.5V18"/>', 1.9),
   budget: svg('<path d="M4 20V11M10 20V6M16 20v-6"/><path d="M3 4.5h6M13 9h6" stroke-dasharray="2 2"/><path d="M2 20h20"/>', 1.9),
   trend: svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>', 1.9),
   map: svg('<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/>', 1.9),

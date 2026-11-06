@@ -14,7 +14,7 @@ for (const f of [...files, "index.html"]) {
   for (const m of s.matchAll(/data-i18n(?:-aria|-title)?="([^"]+)"/g)) used.add(m[1]);
 }
 // Keys built at runtime from fixed lists.
-["gMain", "gMore", "overview", "check", "h1", "alert", "reasons", "sites", "daily", "budget", "trend", "map", "more"].forEach(k => used.add("nav." + k));
+["gMain", "gMore", "overview", "check", "h1", "alert", "reasons", "sites", "daily", "budget", "calc", "trend", "map", "more"].forEach(k => used.add("nav." + k));
 ["overview", "check", "budget", "sites", "more"].forEach(k => used.add("tab." + k));
 
 ["over", "nobudget", "early", "near", "ok", "none"].forEach(k => used.add("bstat." + k));

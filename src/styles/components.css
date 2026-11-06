@@ -521,3 +521,31 @@ body.locked .navbar .compact-title{display:none}
   .ticket.torn .tk-stub{transform:translateY(40px) rotate(-6deg)}
 }
 @media (prefers-reduced-motion:reduce){.gate-beam,.tk-marquee .bulbs,.ticket{animation:none}}
+
+/* ── Kalkulator alokasi ───────────────────────────────────────────────── */
+.calc-intro p{margin:0;color:var(--label-2);font-size:var(--t-callout);line-height:1.55}
+.calc-tools{align-items:flex-end;gap:var(--s3)}
+.calc-tools .field{display:grid;gap:4px;font-size:var(--t-footnote);color:var(--label-2);font-weight:600}
+.calc-reg{display:inline-flex;align-items:center;gap:6px;font-weight:600;padding:8px 12px;border-radius:999px;background:var(--blue-tint);color:var(--blue-text)}
+.calc-reg svg{width:15px;height:15px}
+.ctable td,.ctable th{white-space:nowrap;padding-left:9px;padding-right:9px}
+.ctable td.site b{white-space:normal}
+.ctable th.c,.ctable td.c{text-align:center}
+.ctable tr.c-in td{background:color-mix(in srgb,var(--blue-tint) 60%,transparent)}
+.ctable tr.c-out td{background:color-mix(in srgb,var(--orange-tint) 55%,transparent)}
+.stepper{display:inline-flex;align-items:center;border-radius:10px;background:var(--fill-2);box-shadow:inset 0 0 0 1px var(--separator);overflow:hidden}
+.stepper button{width:30px;height:32px;border:0;background:transparent;color:var(--blue-text);font:600 17px/1 var(--font);cursor:pointer}
+.stepper button:hover{background:var(--fill)}
+.stepper input{width:62px;height:32px;border:0;background:transparent;text-align:center;font:600 var(--t-callout) var(--font);color:var(--label);font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.stepper input:focus{outline:none;background:var(--surface)}
+.stepper.bad{box-shadow:inset 0 0 0 1.5px var(--red)}
+.cplan{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:cp}
+.cplan li{counter-increment:cp;display:grid;grid-template-columns:28px minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:var(--surface-2)}
+.cplan li::before{content:counter(cp);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font:700 12px var(--font)}
+.cplan b{display:block;font-size:var(--t-callout)}
+.cplan small{font-weight:600;font-variant-numeric:tabular-nums}
+.cp-from small{color:var(--orange-text)} .cp-to small{color:var(--blue-text)}
+.cp-to{text-align:right}
+.cp-arrow{font-size:var(--t-footnote);font-weight:600;color:var(--label-2);white-space:nowrap}
+@media (max-width:640px){.cplan li{grid-template-columns:24px minmax(0,1fr)}.cp-arrow,.cp-to{grid-column:2;text-align:left}}

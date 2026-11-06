@@ -184,7 +184,7 @@ export default {
         </div></div>` : "";
 
     c.innerHTML = header(title, t("budget.sub", {month: monthName(key), date: dateLong(r.cut)}),
-        tools + btn(t("budget.copy"), {id: "bvCopy", icon: ICON.copy}) + btn(t("common.downloadExcel"), {act: "budget-xlsx", filled: true, icon: ICON.down})) + `
+        tools + btn(t("nav.calc"), {go: "calc", icon: ICON.calc}) + btn(t("budget.copy"), {id: "bvCopy", icon: ICON.copy}) + btn(t("common.downloadExcel"), {act: "budget-xlsx", filled: true, icon: ICON.down})) + `
       <div class="card bhero">
         <div class="bh-top"><span class="bh-k">${t("budget.heroK", {m: monthOnly(key)})}</span>${tag(state0[1], state0[0] === "bad" ? "red" : state0[0] === "warn" ? "orange" : "green")}</div>
         <div class="bh-v"><b>${rp(T.amountActual)}</b><span>${t("budget.heroOf", {b: rp(T.amountMonth), p: fmt(T.amountMonth ? T.amountActual / T.amountMonth * 100 : 0)})}</span></div>

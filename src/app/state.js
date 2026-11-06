@@ -1,9 +1,9 @@
 // UI state — what the user is looking at. Persisted bits: view and theme.
 import { YESTERDAY } from "./format.js";
 
-export const VIEWS = ["overview", "check", "budget", "sites", "trend", "reasons", "map", "more"];
+export const VIEWS = ["overview", "check", "budget", "calc", "sites", "trend", "reasons", "map", "more"];
 /** Views whose content depends on the month picker. */
-export const MONTH_VIEWS = ["overview", "sites", "map", "budget", "reasons"];
+export const MONTH_VIEWS = ["overview", "sites", "map", "budget", "calc", "reasons"];
 
 /** Monday → Friday (covers Fri–Sun); other days → yesterday. */
 export function defaultAlertFrom() {
@@ -23,6 +23,10 @@ export const state = {
   alertMode: "flagged",
   alertMailRegion: "",
   budgetRegion: "",               // admin: region card selected on the Budget page            // "" = one email to all regions; "REGION n" = only that region (admin)
+  calcRegion: "",                 // Kalkulator: region being simulated
+  calcBasis: "plan",              // "plan" (safe) | "pace"
+  calcBuffer: 0.1,                // keep +10% above the forecast before calling a site "spare"
+  calcAdj: {},                    // "YYYY-MM|REGION n" → {siteCode: ±MH}
   siteFilter: "all",
   q: "",
   perFormat: false,
