@@ -2,10 +2,10 @@
 .app{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);min-height:100%}
 
 .sidebar{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 55%,var(--navy-3) 100%);border-right:0;
-  --label:#ffffff;--label-2:rgba(214,226,255,.66);--label-3:rgba(214,226,255,.4);--separator:rgba(255,255,255,.12);--fill:rgba(255,255,255,.14);--fill-2:rgba(255,255,255,.07);--blue:#aac2ef;--surface:rgba(255,255,255,.16);--surface-2:rgba(255,255,255,.08);color:var(--label);
+  --label:#ffffff;--label-2:rgba(214,226,255,.66);--label-3:rgba(214,226,255,.4);--separator:rgba(255,255,255,.12);--fill:rgba(255,255,255,.14);--fill-2:rgba(255,255,255,.07);--blue:#9fb8ec;--surface:rgba(255,255,255,.16);--surface-2:rgba(255,255,255,.08);color:var(--label);
   padding:var(--s5) var(--s3) var(--s4);display:flex;flex-direction:column;gap:2px;overflow-y:auto}
 .brand{display:flex;align-items:center;gap:10px;padding:0 var(--s2) var(--s5)}
-.brand-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(160deg,#3a68c4,var(--solid));box-shadow:0 4px 12px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.18);display:grid;place-items:center;color:#fff;flex:none}
+.brand-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(160deg,#2a4a9a,var(--solid));box-shadow:0 4px 12px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.18);display:grid;place-items:center;color:#fff;flex:none}
 .brand b{display:block;font-size:var(--t-callout);font-weight:600;line-height:1.25}
 .brand span{font-size:var(--t-footnote);color:var(--label-2)}
 .side-label{font-size:var(--t-caption);font-weight:600;color:var(--label-2);padding:var(--s4) 10px 6px}

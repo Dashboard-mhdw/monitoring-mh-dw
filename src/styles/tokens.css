@@ -12,7 +12,7 @@
   --separator:rgba(13,27,51,.1);
   --fill:rgba(30,60,120,.09);
   --fill-2:rgba(30,60,120,.05);
-  --blue:#1e4fb4;   --blue-text:#1a449c;  --blue-tint:rgba(30,79,180,.1); --blue-soft:#8fa9dc;
+  --blue:#12307a;   --blue-text:#12307a;  --blue-tint:rgba(18,48,122,.1); --blue-soft:#2a4a9a;
   --green:#34c759;  --green-text:#1f8a3b; --green-tint:rgba(52,199,89,.13);
   --red:#ff3b30;    --red-text:#d70015;   --red-tint:rgba(255,59,48,.1);
   --orange:#ff9500; --orange-text:#b85c00;--orange-tint:rgba(255,149,0,.13);
@@ -32,13 +32,13 @@
   --content-w:1200px;
   --ease:cubic-bezier(.2,.8,.2,1);
   /* Cinema navy — sidebar, sign-in, brand accents */
-  --navy:#0c1f4f; --navy-2:#0a1940; --navy-3:#071230; --sky:#6f95dc; --solid:#1e4fb4; --gold:#f2c14e;
+  --navy:#0b1b45; --navy-2:#08143a; --navy-3:#050d28; --sky:#5b7fd0; --solid:#12307a; --gold:#f2c14e;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#050c1d; --surface:#0d1830; --surface-2:#15223f; --sidebar:rgba(28,28,30,.78); --bar:rgba(5,12,29,.74);
   --label:#eef3fb; --label-2:#96a3bd; --label-3:#5d6a85; --separator:rgba(130,160,220,.16);
   --fill:rgba(120,150,210,.16); --fill-2:rgba(120,150,210,.09);
-  --blue:#5d8de0; --blue-text:#86a9ec; --blue-tint:rgba(93,141,224,.18); --blue-soft:#2f4b85;
+  --blue:#2d5bc4; --blue-text:#8fb0f0; --blue-tint:rgba(45,91,196,.22); --blue-soft:#25489b;
   --green:#30d158; --green-text:#30d158; --green-tint:rgba(48,209,88,.16);
   --red:#ff453a; --red-text:#ff6961; --red-tint:rgba(255,69,58,.18);
   --orange:#ff9f0a; --orange-text:#ffb340; --orange-tint:rgba(255,159,10,.18);
@@ -48,7 +48,7 @@
   --bg:#050c1d; --surface:#0d1830; --surface-2:#15223f; --sidebar:rgba(28,28,30,.78); --bar:rgba(5,12,29,.74);
   --label:#eef3fb; --label-2:#96a3bd; --label-3:#5d6a85; --separator:rgba(130,160,220,.16);
   --fill:rgba(120,150,210,.16); --fill-2:rgba(120,150,210,.09);
-  --blue:#5d8de0; --blue-text:#86a9ec; --blue-tint:rgba(93,141,224,.18); --blue-soft:#2f4b85;
+  --blue:#2d5bc4; --blue-text:#8fb0f0; --blue-tint:rgba(45,91,196,.22); --blue-soft:#25489b;
   --green:#30d158; --green-text:#30d158; --green-tint:rgba(48,209,88,.16);
   --red:#ff453a; --red-text:#ff6961; --red-tint:rgba(255,69,58,.18);
   --orange:#ff9f0a; --orange-text:#ffb340; --orange-tint:rgba(255,159,10,.18);
