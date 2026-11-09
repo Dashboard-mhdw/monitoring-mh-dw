@@ -120,7 +120,7 @@ export default {
   // Budget
   "bstat.over": "Melewati jadwal", "bstat.nobudget": "Tanpa budget", "bstat.early": "Pakai sebelum jadwal",
   "bstat.near": "Hampir habis", "bstat.ok": "Aman", "bstat.none": "Tidak pakai",
-  "lock.now": "Sedang tayang", "lock.seat": "Kursi", "lock.show": "Lihat", "lock.hide": "Tutup", "lock.welcome": "Selamat datang, {who}! Selamat menonton 🍿",
+  "lock.show": "Lihat", "lock.hide": "Tutup", "lock.welcome": "Selamat datang, {who}",
   "nav.calc": "Kalkulator Alokasi",
   "calc.sub": "{month} · data s.d. {date} · simulasi pindah budget MH DW antar site",
   "calc.backBudget": "Budget & Sisa",

@@ -445,70 +445,31 @@ body.locked .navbar .compact-title{display:none}
 .trprev{background:var(--fill);border-radius:10px;padding:10px 12px;font-size:var(--t-subhead);line-height:1.5}
 .trprev .bad,.bad{color:var(--red-text)}
 
-/* ── Sign-in: a cinema ticket under two spotlights ─────────────────────── */
-.gate{position:fixed;inset:0;z-index:40;display:grid;place-items:center;align-content:center;gap:18px;padding:72px 16px 32px;overflow:auto;
-  background:radial-gradient(80% 60% at 50% 30%,#1f1f22 0%,#0b0b0c 70%);color:#fff;transition:opacity .45s var(--ease)}
-  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(143,208,255,0) 75%);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%);transform-origin:50% 0}
+/* ── Sign-in ──────────────────────────────────────────────────────────── */
+.gate{position:fixed;inset:0;z-index:40;display:grid;place-items:center;align-content:center;gap:16px;padding:72px 16px 32px;overflow:auto;background:var(--bg);transition:opacity .4s var(--ease)}
 .gate.lights{opacity:0}
-.gate-note{position:relative;z-index:1;max-width:440px;text-align:center;font-size:var(--t-footnote);color:rgba(228,228,231,.6);margin:0}
+.gate-note{max-width:360px;text-align:center;font-size:var(--t-footnote);color:var(--label-3);margin:0}
+.login{width:min(380px,100%);display:grid;gap:12px;padding:32px 28px 28px;border-radius:20px;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06);animation:loginIn .5s var(--ease) both}
+@keyframes loginIn{from{transform:translateY(12px);opacity:0}}
+.login-mark{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--blue);color:var(--on-accent);margin-bottom:4px}
+.login-mark svg{width:20px;height:20px}
+.login-title{margin:0;font:700 24px/1.15 var(--font-display);letter-spacing:-.02em;color:var(--label)}
+.login-sub{margin:0 0 8px;color:var(--label-2);font-size:var(--t-callout);line-height:1.45}
+.login-field{position:relative}
+.login-field input{width:100%;font:500 15px/1.2 var(--font);padding:12px 64px 12px 14px;border-radius:12px;border:1px solid var(--separator);background:var(--surface-2);color:var(--label);outline:none;transition:border-color .15s,box-shadow .15s}
+.login-field input:focus{border-color:var(--label-2);box-shadow:0 0 0 3px var(--fill)}
+.login-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:32px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--label-2);font:600 var(--t-subhead) var(--font);cursor:pointer}
+.login-eye:hover{background:var(--fill-2);color:var(--label)}
+.login .lock-msg{margin:0;min-height:1.2em;font-size:var(--t-subhead);color:var(--label-2)}
+.login .lock-msg.bad{color:var(--red-text)}
+.login .lock-msg.ok{color:var(--green-text);font-weight:600}
+.login-go{height:46px;border:0;border-radius:12px;cursor:pointer;background:var(--blue);color:var(--on-accent);font:600 var(--t-body) var(--font);transition:opacity .15s}
+.login-go:hover{opacity:.88}
+.login-go:disabled{opacity:.6;cursor:progress}
+.login.shake{animation:loginShake .4s var(--ease)}
+@keyframes loginShake{25%,75%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){.login{animation:none}}
 
-.ticket{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 128px;width:min(560px,100%);
-  filter:drop-shadow(0 20px 40px rgba(0,0,0,.5));animation:tkIn .7s var(--ease) both;
-  --tk:#ffffff;--tk-ink:#0d1b33;--tk-mute:#62626a;--notch:11px}
-@keyframes tkIn{from{transform:translateY(24px) rotate(-1.5deg);opacity:0}}
-.tk-main,.tk-stub{background:var(--tk);color:var(--tk-ink)}
-.tk-main{padding:26px 28px 24px;border-radius:18px 0 0 18px;display:grid;gap:12px;
-  -webkit-mask:radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 100% 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
-          mask:radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 100% 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
-.tk-stub{border-radius:0 18px 18px 0;align-content:center;gap:28px !important;border-left:2px dashed rgba(13,27,51,.18);padding:20px 12px;display:grid;justify-items:center;align-content:space-between;gap:10px;text-align:center;
-  background:linear-gradient(180deg,var(--navy),var(--navy-2));color:#fff;transition:transform .8s var(--ease),opacity .8s var(--ease);transform-origin:0 100%;
-  -webkit-mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 0 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
-          mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 0 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
-.tk-admit{writing-mode:vertical-rl;transform:rotate(180deg);font:800 13px/1 var(--font-display);letter-spacing:.32em;color:var(--sky)}
-.tk-seat{display:grid;gap:2px}
-.tk-seat small{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(228,228,231,.6)}
-.tk-seat b{font:700 15px/1.15 var(--font-display);min-height:1.15em;transition:color .3s}
-
-.tk-kicker{font:700 11px/1 var(--font);letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
-.tk-title{margin:0;font:700 30px/1.1 var(--font-display);letter-spacing:-.02em;color:var(--navy)}
-.tk-title em{font-style:normal;color:var(--label-3)}
-.tk-sub{margin:0;color:var(--tk-mute);font-size:var(--t-callout);line-height:1.45}
-.tk-field{position:relative;display:grid;gap:6px;margin-top:4px}
-.tk-field>span{font-size:var(--t-caption);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tk-mute)}
-.tk-field input{width:100%;font:500 16px/1.2 var(--mono);letter-spacing:.04em;padding:13px 70px 13px 14px;border-radius:12px;border:1.5px solid #e4e4e7;background:#fafafa;color:var(--tk-ink);outline:none;transition:border-color .2s,box-shadow .2s,background .2s}
-.tk-field input::placeholder{color:#a1a1aa;letter-spacing:.12em}
-.tk-field input:focus{border-color:var(--solid);background:#fff;box-shadow:0 0 0 4px rgba(0,0,0,.14)}
-.tk-eye{position:absolute;right:6px;bottom:6px;height:34px;padding:0 12px;border:0;border-radius:9px;background:transparent;color:var(--solid);font:600 var(--t-subhead) var(--font);cursor:pointer}
-.tk-eye:hover{background:rgba(0,0,0,.08)}
-.ticket .lock-msg{margin:0;min-height:1.3em;font-size:var(--t-subhead);color:var(--tk-mute)}
-.ticket .lock-msg.bad{color:#d70015}
-.ticket .lock-msg.ok{color:#1f8a3b;font-weight:600}
-.tk-go{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border:0;border-radius:12px;cursor:pointer;color:#fff;font:700 var(--t-body) var(--font);
-  background:linear-gradient(120deg,var(--navy),var(--solid));box-shadow:0 8px 20px rgba(0,0,0,.3);transition:transform .15s var(--ease),box-shadow .2s,filter .2s}
-.tk-go:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(0,0,0,.38)}
-.tk-go:active{transform:translateY(1px)}
-.tk-go svg{transition:transform .25s var(--ease)}
-.tk-go:hover svg,.ticket.typing .tk-go svg{transform:translateX(3px)}
-.tk-go:disabled{filter:saturate(.6) brightness(.95);cursor:progress}
-.ticket.checking .tk-seat b{animation:scan .5s ease-in-out infinite alternate}
-@keyframes scan{to{opacity:.25}}
-.ticket.shake{animation:tkShake .45s var(--ease)}
-@keyframes tkShake{20%,60%{transform:translateX(-9px) rotate(-.6deg)}40%,80%{transform:translateX(9px) rotate(.6deg)}}
-.ticket.torn .tk-stub{transform:translate(40px,30px) rotate(14deg);opacity:0}
-.ticket.torn .tk-seat b{color:var(--gold)}
-@media (max-width:560px){
-  .ticket{grid-template-columns:1fr;grid-template-rows:auto auto}
-  .tk-main{border-radius:18px 18px 0 0;padding:22px 20px 20px;
-    -webkit-mask:radial-gradient(circle var(--notch) at 0 100%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--notch) at 100% 100%,#0000 98%,#000) right/51% 100% no-repeat;
-            mask:radial-gradient(circle var(--notch) at 0 100%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--notch) at 100% 100%,#0000 98%,#000) right/51% 100% no-repeat}
-  .tk-stub{border-radius:0 0 18px 18px;border-left:0;border-top:2px dashed rgba(255,255,255,.25);grid-auto-flow:column;align-items:center;padding:14px 18px;
-    -webkit-mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) right/51% 100% no-repeat;
-            mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) right/51% 100% no-repeat}
-  .tk-admit{writing-mode:horizontal-tb;transform:none;font-size:11px}
-  .tk-title{font-size:26px}
-  .ticket.torn .tk-stub{transform:translateY(40px) rotate(-6deg)}
-}
-@media (prefers-reduced-motion:reduce){
 /* ── Kalkulator alokasi ───────────────────────────────────────────────── */
 .calc-intro p{margin:0;color:var(--label-2);font-size:var(--t-callout);line-height:1.55}
 .calc-tools{align-items:flex-end;gap:var(--s3)}
