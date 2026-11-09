@@ -15,15 +15,16 @@ export function renderGate(c, onOpen) {
   document.body.insertAdjacentHTML("beforeend", `
     <div class="gate" id="gate">
       <form class="login" id="lockForm" autocomplete="off">
-        <div class="login-mark" aria-hidden="true">${ICON.lock}</div>
-        <h1 class="login-title">Monitoring MH DW</h1>
+        <div class="login-head"><div class="login-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 015.5 6h13A2.5 2.5 0 0121 8.5v1.2a2.3 2.3 0 000 4.6v1.2a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 15.5v-1.2a2.3 2.3 0 000-4.6z"/><path d="M15 6.5v11" stroke-dasharray="1.6 2.2"/></svg></div><span class="login-kicker">Daily Worker · Operations</span></div>
+        <h1 class="login-title">Monitoring <span>MH DW</span></h1>
         <p class="login-sub">${t("lock.sub")}</p>
         <div class="login-field">
+          <span class="login-ic" aria-hidden="true">${ICON.lock}</span>
           <input type="password" id="lockPw" placeholder="${t("lock.placeholder")}" aria-label="${t("lock.placeholder")}" autocomplete="current-password" spellcheck="false">
           <button type="button" class="login-eye" id="lockEye">${t("lock.show")}</button>
         </div>
         <p class="lock-msg" id="lockMsg" role="status"></p>
-        <button type="submit" class="login-go" id="lockGo">${t("lock.open")}</button>
+        <button type="submit" class="login-go" id="lockGo"><span>${t("lock.open")}</span><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       </form>
       <p class="gate-note">${t("lock.note")}</p>
     </div>`);
