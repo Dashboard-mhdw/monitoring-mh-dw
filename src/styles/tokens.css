@@ -1,18 +1,18 @@
 /* Design tokens — Apple system palette, HIG type scale, 4-pt spacing.
    Light is the default; dark follows the OS unless data-theme forces one. */
 :root{
-  --bg:#f2f5fa;
+  --bg:#f4f4f5;
   --surface:#ffffff;
-  --surface-2:#eef2f8;
+  --surface-2:#f0f0f2;
   --sidebar:rgba(245,245,247,.8);
-  --bar:rgba(242,245,250,.78);
-  --label:#0d1b33;
-  --label-2:#5b6780;
-  --label-3:#a3adbf;
-  --separator:rgba(13,27,51,.1);
-  --fill:rgba(30,60,120,.09);
-  --fill-2:rgba(30,60,120,.05);
-  --blue:#12307a;   --blue-text:#12307a;  --blue-tint:rgba(18,48,122,.1); --blue-soft:#2a4a9a;
+  --bar:rgba(244,244,245,.8);
+  --label:#111113;
+  --label-2:#62626a;
+  --label-3:#a6a6ad;
+  --separator:rgba(0,0,0,.09);
+  --fill:rgba(0,0,0,.075);
+  --fill-2:rgba(0,0,0,.04);
+  --blue:#111113;   --blue-text:#111113;  --blue-tint:rgba(0,0,0,.07); --blue-soft:#3f3f46;
   --green:#34c759;  --green-text:#1f8a3b; --green-tint:rgba(52,199,89,.13);
   --red:#ff3b30;    --red-text:#d70015;   --red-tint:rgba(255,59,48,.1);
   --orange:#ff9500; --orange-text:#b85c00;--orange-tint:rgba(255,149,0,.13);
@@ -31,24 +31,24 @@
   --sidebar-w:244px;
   --content-w:1200px;
   --ease:cubic-bezier(.2,.8,.2,1);
-  /* Cinema navy — sidebar, sign-in, brand accents */
-  --navy:#0b1b45; --navy-2:#08143a; --navy-3:#050d28; --sky:#5b7fd0; --solid:#12307a; --gold:#f2c14e;
+  /* Brand black — sidebar, sign-in, accents (names kept from the earlier navy theme) */
+  --navy:#1c1c1f; --navy-2:#121214; --navy-3:#0a0a0b; --sky:#a1a1aa; --solid:#111113; --gold:#f2c14e;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#050c1d; --surface:#0d1830; --surface-2:#15223f; --sidebar:rgba(28,28,30,.78); --bar:rgba(5,12,29,.74);
-  --label:#eef3fb; --label-2:#96a3bd; --label-3:#5d6a85; --separator:rgba(130,160,220,.16);
-  --fill:rgba(120,150,210,.16); --fill-2:rgba(120,150,210,.09);
-  --blue:#2d5bc4; --blue-text:#8fb0f0; --blue-tint:rgba(45,91,196,.22); --blue-soft:#25489b;
+  --bg:#09090b; --surface:#161618; --surface-2:#202023; --sidebar:rgba(28,28,30,.78); --bar:rgba(9,9,11,.76);
+  --label:#f4f4f5; --label-2:#a1a1aa; --label-3:#63636b; --separator:rgba(255,255,255,.1);
+  --fill:rgba(255,255,255,.12); --fill-2:rgba(255,255,255,.06);
+  --blue:#ececef; --blue-text:#f4f4f5; --blue-tint:rgba(255,255,255,.12); --blue-soft:#a1a1aa; --on-accent:#111113;
   --green:#30d158; --green-text:#30d158; --green-tint:rgba(48,209,88,.16);
   --red:#ff453a; --red-text:#ff6961; --red-tint:rgba(255,69,58,.18);
   --orange:#ff9f0a; --orange-text:#ffb340; --orange-tint:rgba(255,159,10,.18);
   --indigo:#5e5ce6; --indigo-tint:rgba(94,92,230,.2);
   --shadow:none; --shadow-pop:0 12px 48px rgba(0,0,0,.6),0 0 0 .5px rgba(255,255,255,.08); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#050c1d; --surface:#0d1830; --surface-2:#15223f; --sidebar:rgba(28,28,30,.78); --bar:rgba(5,12,29,.74);
-  --label:#eef3fb; --label-2:#96a3bd; --label-3:#5d6a85; --separator:rgba(130,160,220,.16);
-  --fill:rgba(120,150,210,.16); --fill-2:rgba(120,150,210,.09);
-  --blue:#2d5bc4; --blue-text:#8fb0f0; --blue-tint:rgba(45,91,196,.22); --blue-soft:#25489b;
+  --bg:#09090b; --surface:#161618; --surface-2:#202023; --sidebar:rgba(28,28,30,.78); --bar:rgba(9,9,11,.76);
+  --label:#f4f4f5; --label-2:#a1a1aa; --label-3:#63636b; --separator:rgba(255,255,255,.1);
+  --fill:rgba(255,255,255,.12); --fill-2:rgba(255,255,255,.06);
+  --blue:#ececef; --blue-text:#f4f4f5; --blue-tint:rgba(255,255,255,.12); --blue-soft:#a1a1aa; --on-accent:#111113;
   --green:#30d158; --green-text:#30d158; --green-tint:rgba(48,209,88,.16);
   --red:#ff453a; --red-text:#ff6961; --red-tint:rgba(255,69,58,.18);
   --orange:#ff9f0a; --orange-text:#ffb340; --orange-tint:rgba(255,159,10,.18);
