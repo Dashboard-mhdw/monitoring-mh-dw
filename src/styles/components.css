@@ -447,47 +447,36 @@ body.locked .navbar .compact-title{display:none}
 
 /* ── Sign-in: a cinema ticket under two spotlights ─────────────────────── */
 .gate{position:fixed;inset:0;z-index:40;display:grid;place-items:center;align-content:center;gap:18px;padding:72px 16px 32px;overflow:auto;
-  background:radial-gradient(90% 70% at 50% 0%,#2a2a2e 0%,var(--navy-2) 45%,var(--navy-3) 100%);color:#fff;transition:opacity .45s var(--ease)}
-.gate::after{content:"";position:fixed;inset:auto 0 0 0;height:24vh;background:repeating-radial-gradient(circle at 50% 130%,rgba(255,255,255,.022) 0 20px,transparent 20px 40px);-webkit-mask:linear-gradient(transparent,#000);mask:linear-gradient(transparent,#000);pointer-events:none}
-.gate-beam{position:fixed;top:-10vh;width:44vw;height:120vh;pointer-events:none;opacity:.5;filter:blur(18px);
+  background:radial-gradient(80% 60% at 50% 30%,#1f1f22 0%,#0b0b0c 70%);color:#fff;transition:opacity .45s var(--ease)}
   background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(143,208,255,0) 75%);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%);transform-origin:50% 0}
-.gate-beam.l{left:-6vw;transform:rotate(-22deg);animation:beamL 9s ease-in-out infinite alternate}
-.gate-beam.r{right:-6vw;transform:rotate(22deg);animation:beamR 11s ease-in-out infinite alternate}
-@keyframes beamL{to{transform:rotate(-12deg)}}
-@keyframes beamR{to{transform:rotate(14deg)}}
 .gate.lights{opacity:0}
-.gate-note{position:relative;z-index:1;max-width:440px;text-align:center;font-size:var(--t-footnote);color:rgba(214,226,255,.6);margin:0}
+.gate-note{position:relative;z-index:1;max-width:440px;text-align:center;font-size:var(--t-footnote);color:rgba(228,228,231,.6);margin:0}
 
 .ticket{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 128px;width:min(560px,100%);
-  filter:drop-shadow(0 24px 48px rgba(0,0,0,.45));animation:tkIn .7s var(--ease) both;
-  --tk:#ffffff;--tk-ink:#0d1b33;--tk-mute:#5b6780;--notch:11px}
+  filter:drop-shadow(0 20px 40px rgba(0,0,0,.5));animation:tkIn .7s var(--ease) both;
+  --tk:#ffffff;--tk-ink:#0d1b33;--tk-mute:#62626a;--notch:11px}
 @keyframes tkIn{from{transform:translateY(24px) rotate(-1.5deg);opacity:0}}
 .tk-main,.tk-stub{background:var(--tk);color:var(--tk-ink)}
 .tk-main{padding:26px 28px 24px;border-radius:18px 0 0 18px;display:grid;gap:12px;
   -webkit-mask:radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 100% 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
           mask:radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 100% 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
-.tk-stub{border-radius:0 18px 18px 0;border-left:2px dashed rgba(13,27,51,.18);padding:20px 12px;display:grid;justify-items:center;align-content:space-between;gap:10px;text-align:center;
+.tk-stub{border-radius:0 18px 18px 0;align-content:center;gap:28px !important;border-left:2px dashed rgba(13,27,51,.18);padding:20px 12px;display:grid;justify-items:center;align-content:space-between;gap:10px;text-align:center;
   background:linear-gradient(180deg,var(--navy),var(--navy-2));color:#fff;transition:transform .8s var(--ease),opacity .8s var(--ease);transform-origin:0 100%;
   -webkit-mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 0 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
           mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at 0 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
 .tk-admit{writing-mode:vertical-rl;transform:rotate(180deg);font:800 13px/1 var(--font-display);letter-spacing:.32em;color:var(--sky)}
 .tk-seat{display:grid;gap:2px}
-.tk-seat small{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(214,226,255,.6)}
+.tk-seat small{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(228,228,231,.6)}
 .tk-seat b{font:700 15px/1.15 var(--font-display);min-height:1.15em;transition:color .3s}
-.tk-code{display:flex;gap:2px;height:30px;width:92px;justify-content:center}
-.tk-code i{display:block;background:rgba(255,255,255,.85);border-radius:1px}
-.tk-no{font:600 10px/1 var(--mono);letter-spacing:.08em;color:rgba(214,226,255,.6)}
 
-.tk-marquee{display:flex;align-items:center;gap:10px;font:800 11px/1 var(--font-display);letter-spacing:.24em;text-transform:uppercase;color:#b07a00}
-.tk-marquee .bulbs{flex:1;height:6px;background:radial-gradient(circle 3px,var(--gold) 92%,transparent) 0 0/12px 6px repeat-x;animation:bulbs 1.2s steps(2) infinite}
-@keyframes bulbs{50%{filter:brightness(.55)}}
+.tk-kicker{font:700 11px/1 var(--font);letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .tk-title{margin:0;font:700 30px/1.1 var(--font-display);letter-spacing:-.02em;color:var(--navy)}
-.tk-title em{font-style:normal;background:linear-gradient(120deg,var(--solid),var(--sky));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tk-title em{font-style:normal;color:var(--label-3)}
 .tk-sub{margin:0;color:var(--tk-mute);font-size:var(--t-callout);line-height:1.45}
 .tk-field{position:relative;display:grid;gap:6px;margin-top:4px}
 .tk-field>span{font-size:var(--t-caption);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tk-mute)}
-.tk-field input{width:100%;font:500 16px/1.2 var(--mono);letter-spacing:.04em;padding:13px 70px 13px 14px;border-radius:12px;border:1.5px solid #d5ddeb;background:#f5f8fd;color:var(--tk-ink);outline:none;transition:border-color .2s,box-shadow .2s,background .2s}
-.tk-field input::placeholder{color:#a9b4c8;letter-spacing:.12em}
+.tk-field input{width:100%;font:500 16px/1.2 var(--mono);letter-spacing:.04em;padding:13px 70px 13px 14px;border-radius:12px;border:1.5px solid #e4e4e7;background:#fafafa;color:var(--tk-ink);outline:none;transition:border-color .2s,box-shadow .2s,background .2s}
+.tk-field input::placeholder{color:#a1a1aa;letter-spacing:.12em}
 .tk-field input:focus{border-color:var(--solid);background:#fff;box-shadow:0 0 0 4px rgba(0,0,0,.14)}
 .tk-eye{position:absolute;right:6px;bottom:6px;height:34px;padding:0 12px;border:0;border-radius:9px;background:transparent;color:var(--solid);font:600 var(--t-subhead) var(--font);cursor:pointer}
 .tk-eye:hover{background:rgba(0,0,0,.08)}
@@ -501,7 +490,7 @@ body.locked .navbar .compact-title{display:none}
 .tk-go svg{transition:transform .25s var(--ease)}
 .tk-go:hover svg,.ticket.typing .tk-go svg{transform:translateX(3px)}
 .tk-go:disabled{filter:saturate(.6) brightness(.95);cursor:progress}
-.ticket.checking .tk-code i{animation:scan .5s ease-in-out infinite alternate}
+.ticket.checking .tk-seat b{animation:scan .5s ease-in-out infinite alternate}
 @keyframes scan{to{opacity:.25}}
 .ticket.shake{animation:tkShake .45s var(--ease)}
 @keyframes tkShake{20%,60%{transform:translateX(-9px) rotate(-.6deg)}40%,80%{transform:translateX(9px) rotate(.6deg)}}
@@ -516,12 +505,10 @@ body.locked .navbar .compact-title{display:none}
     -webkit-mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) right/51% 100% no-repeat;
             mask:radial-gradient(circle var(--notch) at 0 0,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--notch) at 100% 0,#0000 98%,#000) right/51% 100% no-repeat}
   .tk-admit{writing-mode:horizontal-tb;transform:none;font-size:11px}
-  .tk-no{display:none}
   .tk-title{font-size:26px}
   .ticket.torn .tk-stub{transform:translateY(40px) rotate(-6deg)}
 }
-@media (prefers-reduced-motion:reduce){.gate-beam,.tk-marquee .bulbs,.ticket{animation:none}}
-
+@media (prefers-reduced-motion:reduce){
 /* ── Kalkulator alokasi ───────────────────────────────────────────────── */
 .calc-intro p{margin:0;color:var(--label-2);font-size:var(--t-callout);line-height:1.55}
 .calc-tools{align-items:flex-end;gap:var(--s3)}

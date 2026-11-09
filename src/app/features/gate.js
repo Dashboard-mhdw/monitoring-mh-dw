@@ -6,9 +6,6 @@ import { unlock } from "../store.js";
 
 const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const wait = ms => new Promise(r => setTimeout(r, reduce() ? 0 : ms));
-// A barcode that looks different every visit — purely decorative.
-const barcode = () => Array.from({length: 30}, () => `<i style="width:${1 + Math.floor(Math.random() * 3)}px"></i>`).join("");
-const ticketNo = () => "MH-" + String(Math.floor(Math.random() * 90000) + 10000);
 
 /** Render the ticket into `c`; calls onOpen() after a password matched. */
 export function renderGate(c, onOpen) {
@@ -17,10 +14,9 @@ export function renderGate(c, onOpen) {
   c.innerHTML = "";
   document.body.insertAdjacentHTML("beforeend", `
     <div class="gate" id="gate">
-      <div class="gate-beam l" aria-hidden="true"></div><div class="gate-beam r" aria-hidden="true"></div>
       <form class="ticket" id="lockForm" autocomplete="off">
         <div class="tk-main">
-          <div class="tk-marquee" aria-hidden="true"><span class="bulbs"></span><b>${t("lock.now")}</b><span class="bulbs"></span></div>
+          <span class="tk-kicker">${t("lock.now")}</span>
           <h1 class="tk-title">Monitoring <em>MH DW</em></h1>
           <p class="tk-sub">${t("lock.sub")}</p>
           <label class="tk-field"><span>${t("lock.placeholder")}</span>
@@ -33,8 +29,6 @@ export function renderGate(c, onOpen) {
         <div class="tk-stub" id="tkStub" aria-hidden="true">
           <span class="tk-admit">ADMIT ONE</span>
           <span class="tk-seat"><small>${t("lock.seat")}</small><b id="tkSeat">—</b></span>
-          <span class="tk-code">${barcode()}</span>
-          <span class="tk-no">${ticketNo()}</span>
         </div>
       </form>
       <p class="gate-note">${t("lock.note")}</p>
