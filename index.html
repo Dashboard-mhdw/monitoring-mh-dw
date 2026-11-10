@@ -10,14 +10,55 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111113'/%3E%3Cpath d='M6 12a2 2 0 012-2h16a2 2 0 012 2v1.5a2.5 2.5 0 000 5V20a2 2 0 01-2 2H8a2 2 0 01-2-2v-1.5a2.5 2.5 0 000-5z' fill='none' stroke='white' stroke-width='2'/%3E%3Cpath d='M19 10.5v11' stroke='%23a1a1aa' stroke-width='1.6' stroke-dasharray='1.5 2'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="src/styles/tokens.css">
-<link rel="stylesheet" href="src/styles/base.css">
-<link rel="stylesheet" href="src/styles/layout.css">
-<link rel="stylesheet" href="src/styles/components.css?v=20261110a">
+<link rel="stylesheet" href="src/styles/tokens.css?v=51e9f8ab">
+<link rel="stylesheet" href="src/styles/base.css?v=d8e4db78">
+<link rel="stylesheet" href="src/styles/layout.css?v=043fb050">
+<link rel="stylesheet" href="src/styles/components.css?v=49d51f3c">
 <!-- Domain rules shared with the Node build scripts -->
-<script src="core.js?v=20261110a"></script>
+<script src="core.js?v=b5e85cc7"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
-<script type="module" src="src/app/main.js?v=20261110a"></script>
+<!-- stamp:importmap -->
+<script type="importmap">
+{
+ "imports": {
+  "./src/app/features/alert-mail.js": "./src/app/features/alert-mail.js?v=5c71a676",
+  "./src/app/features/alert.js": "./src/app/features/alert.js?v=1a54be71",
+  "./src/app/features/budget-mail.js": "./src/app/features/budget-mail.js?v=47287790",
+  "./src/app/features/budget.js": "./src/app/features/budget.js?v=fb5b7b35",
+  "./src/app/features/calc.js": "./src/app/features/calc.js?v=9a9a935d",
+  "./src/app/features/check.js": "./src/app/features/check.js?v=5b159244",
+  "./src/app/features/daily.js": "./src/app/features/daily.js?v=dfb12225",
+  "./src/app/features/exports.js": "./src/app/features/exports.js?v=64cb75e2",
+  "./src/app/features/gate.js": "./src/app/features/gate.js?v=67e5c342",
+  "./src/app/features/h1.js": "./src/app/features/h1.js?v=e8ec252f",
+  "./src/app/features/map.js": "./src/app/features/map.js?v=295002d1",
+  "./src/app/features/more.js": "./src/app/features/more.js?v=042b40ed",
+  "./src/app/features/overview.js": "./src/app/features/overview.js?v=989655c9",
+  "./src/app/features/reasons.js": "./src/app/features/reasons.js?v=8703c432",
+  "./src/app/features/search.js": "./src/app/features/search.js?v=03738772",
+  "./src/app/features/shared.js": "./src/app/features/shared.js?v=08383a35",
+  "./src/app/features/site-detail.js": "./src/app/features/site-detail.js?v=3ea7a627",
+  "./src/app/features/sites.js": "./src/app/features/sites.js?v=01dfbd83",
+  "./src/app/features/trend.js": "./src/app/features/trend.js?v=5d99af75",
+  "./src/app/format.js": "./src/app/format.js?v=8059971f",
+  "./src/app/i18n.js": "./src/app/i18n.js?v=a284f956",
+  "./src/app/locales/en.js": "./src/app/locales/en.js?v=1c669583",
+  "./src/app/locales/id.js": "./src/app/locales/id.js?v=bfcb2a9e",
+  "./src/app/main.js": "./src/app/main.js?v=de7ee873",
+  "./src/app/reasons.js": "./src/app/reasons.js?v=b6fbb8b2",
+  "./src/app/state.js": "./src/app/state.js?v=b5834933",
+  "./src/app/store.js": "./src/app/store.js?v=083abf22",
+  "./src/app/ui/charts.js": "./src/app/ui/charts.js?v=2a0829a4",
+  "./src/app/ui/components.js": "./src/app/ui/components.js?v=9c52db45",
+  "./src/app/ui/dom.js": "./src/app/ui/dom.js?v=9ca3a5ca",
+  "./src/app/ui/map.js": "./src/app/ui/map.js?v=305ec10d",
+  "./src/app/ui/sheet.js": "./src/app/ui/sheet.js?v=17ad19d3",
+  "./src/app/vault.js": "./src/app/vault.js?v=354b7547"
+ }
+}
+</script>
+<!-- /stamp:importmap -->
+<script type="module" src="src/app/main.js?v=de7ee873"></script>
 </head>
 <body>
 <div class="app">
