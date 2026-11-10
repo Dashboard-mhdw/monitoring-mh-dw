@@ -507,3 +507,18 @@ body.locked .navbar .compact-title{display:none}
 .cp-to{text-align:right}
 .cp-arrow{font-size:var(--t-footnote);font-weight:600;color:var(--label-2);white-space:nowrap}
 @media (max-width:640px){.cplan li{grid-template-columns:24px minmax(0,1fr)}.cp-arrow,.cp-to{grid-column:2;text-align:left}}
+
+/* ── Map: 2D/3D switch ────────────────────────────────────────────────── */
+.sitemap{position:relative}
+.map-mode{position:absolute;top:10px;right:10px;z-index:1000;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:999px;cursor:pointer;
+  background:var(--blue);color:var(--on-accent);font:600 var(--t-footnote) var(--font);box-shadow:0 4px 12px rgba(0,0,0,.18);transition:transform .15s var(--ease)}
+.map-mode:hover{transform:translateY(-1px)}
+.map3d,.map3d.maplibregl-map{position:absolute!important;inset:0;width:100%;height:100%}
+.sitemap.is3d{background:var(--map-sea)}
+.map3d .maplibregl-ctrl-group{background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.map3d .maplibregl-ctrl-group button+button{border-top-color:var(--separator)}
+.map3d .maplibregl-ctrl-icon{filter:var(--map-ctrl-filter,none)}
+.map3d-tip .maplibregl-popup-content{background:var(--surface);color:var(--label);border-radius:10px;padding:8px 10px;font-size:var(--t-footnote);line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.map3d-tip .maplibregl-popup-tip{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--map-ctrl-filter:invert(1)}}
+:root[data-theme="dark"]{--map-ctrl-filter:invert(1)}
