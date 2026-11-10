@@ -4,12 +4,13 @@
  *   • Pindah budget MH DW antar site (RM)    → langsung mengubah kolom "MH DW After" di sheet "Budget per cinema"
  *                                              + dicatat di tab "Transfer Dashboard"
  *
- * PASANG SEKALI (di spreadsheet BUDGET, yang berisi sheet "Budget per cinema"):
- *   1. Extensions → Apps Script. Hapus isi Code.gs, tempel seluruh file ini, Save.
+ * PASANG SEKALI (pakai akun Google yang bisa mengedit spreadsheet budget):
+ *   1. Buka https://script.new (proyek Apps Script baru). Hapus isi Code.gs, tempel seluruh file ini, Save.
+ *      (Boleh juga dari spreadsheet budget → Extensions → Apps Script; hasilnya sama.)
  *   2. Deploy → New deployment → ikon gerigi → Web app.
  *        Execute as: Me        Who has access: Anyone
- *      Deploy → Authorize/Allow → salin "Web app URL" (…/exec) dan kirim ke admin dashboard
- *      (diisi ke config.json → "apiEndpoint").
+ *      Deploy → Authorize access → pilih akun → Advanced → Go to … (unsafe) → Allow → salin "Web app URL" (…/exec)
+ *      dan kirim ke admin dashboard (diisi ke config.json → "apiEndpoint").
  *   Kalau kode ini diganti: Deploy → Manage deployments → ✏️ → Version: New version → Deploy (URL tetap sama).
  *
  * KEAMANAN: setiap permintaan wajib membawa token dari password dashboard (disimpan terkunci di vault).
@@ -25,6 +26,8 @@ const TOKENS = {
   "0f9dd65dd3477c659d46fed832b15bb9194d936ffdbd8e01616bcbf49b3b24df": "REGION 6",
 };
 const BUDGET_SHEET = 'Budget per cinema';
+const SHEET_ID = '1Adrxk9YqDGanMTgkuxh3RS-8X5W83-9Gy9kzk62BNsw';   // spreadsheet budget (dipakai kalau script ini berdiri sendiri, tidak terpasang di spreadsheet)
+function ss_() { let a = null; try { a = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) {} return a || SpreadsheetApp.openById(SHEET_ID); }
 const NOTES = 'Catatan Dashboard', NOTE_HEAD = ['id', 'timestamp', 'site_code', 'cinema', 'region', 'tanggal', 'konteks', 'kategori', 'reason', 'sumber', 'dicatat_oleh', 'status'];
 const TRANSFERS = 'Transfer Dashboard', TR_HEAD = ['id', 'timestamp', 'bulan', 'region', 'dari_kode', 'dari_cinema', 'ke_kode', 'ke_cinema', 'mh_dari', 'rate_dari', 'mh_ke', 'rate_ke', 'amount',
   'dari_sebelum', 'dari_sesudah', 'ke_sebelum', 'ke_sesudah', 'alasan', 'oleh', 'akses', 'status'];
@@ -38,7 +41,7 @@ function scopeOf_(token) {
 }
 const canSee_ = (scope, region) => scope === 'ALL' || String(region || '').trim() === scope;
 function tab_(name, head) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = ss_();
   let sh = ss.getSheetByName(name);
   if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); sh.getRange(1, 1, 1, head.length).setFontWeight('bold'); }
   return sh;
@@ -49,7 +52,7 @@ function rows_(sh) {
 }
 /** Budget sheet → {month, cols, sites: {code: {row, region, cinema, mh, rate, formula}}} */
 function budget_() {
-  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BUDGET_SHEET);
+  const sh = ss_().getSheetByName(BUDGET_SHEET);
   if (!sh) throw new Error('Sheet "' + BUDGET_SHEET + '" tidak ada');
   const rng = sh.getDataRange(), v = rng.getValues(), f = rng.getFormulas();
   const H = v[0].map(h => String(h).trim().toLowerCase());
