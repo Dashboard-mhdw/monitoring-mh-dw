@@ -533,7 +533,8 @@ body.locked .navbar .compact-title{display:none}
 .ctile b{font:700 22px/1.15 var(--font-display);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .ctile b em{font-style:normal;color:var(--label-3);font-size:16px}
 .ctile span{font-size:var(--t-footnote);color:var(--label-2);display:flex;align-items:center;gap:8px}
-.ctile.bad b{color:var(--red-text)} .ctile.good b{color:var(--green-text)}
+.ctile.bad b{color:var(--red-text)} .ctile.good b{color:var(--green-text)} .ctile.warn b{color:var(--orange-text)}
+.cp-pool{color:var(--label-2);font-style:italic}
 .cbar{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--fill);overflow:hidden;flex:none}
 .cbar i{display:block;height:100%;background:var(--blue);border-radius:3px}
 .cbar.over i{background:var(--red)}
