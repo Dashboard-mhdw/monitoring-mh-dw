@@ -26,7 +26,8 @@ export const state = {
   calcRegion: "",                 // Kalkulator: region being simulated
   calcBasis: "plan",              // "plan" (safe) | "pace"
   calcBuffer: 0.1,                // keep +10% above the forecast before calling a site "spare"
-  calcAdj: {},                    // "YYYY-MM|REGION n" → {siteCode: ±MH}
+  calcMoves: {},                  // "YYYY-MM|REGION n" → [{from, to, mh}] simulated moves
+  calcForm: {from: "", to: "", mh: ""},
   siteFilter: "all",
   q: "",
   perFormat: false,

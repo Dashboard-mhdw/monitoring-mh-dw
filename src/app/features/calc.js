@@ -1,11 +1,13 @@
-// Kalkulator Alokasi — simulate moving MH DW budget between sites of one region before submitting it.
-// Need per site = what it will probably use by month end (pace so far × remaining days) − its budget.
-// Moves are valued in Rupiah, so the MH a site receives = MH given × rate asal ÷ rate tujuan.
+// Kalkulator Alokasi — in three steps:
+//   1 · Budget sekarang: what each site in the region has, has used, has left, and will probably need.
+//   2 · Simulasi: add (and delete) moves "dari site A → ke site B, x MH". Moves are valued in Rupiah,
+//       so the MH a site receives = MH given × rate asal ÷ rate tujuan.
+//   3 · Hasil: the region after the moves, ready to copy or submit to the budget sheet.
 import { t } from "../i18n.js";
 import { reasons, addTransfer } from "../reasons.js";
 import { fmt, monthName, monthEnd, dateLong, rp } from "../format.js";
 import { esc, ICON, on, copyText, hud } from "../ui/dom.js";
-import { header, kpi, kpis, notice, btn, tag } from "../ui/components.js";
+import { header, notice, btn, tag } from "../ui/components.js";
 import { budgetVsActual, store } from "../store.js";
 import { state } from "../state.js";
 import { cutFor } from "./budget.js";
@@ -13,27 +15,24 @@ import { cutFor } from "./budget.js";
 const half = v => Math.floor(v * 2 + 1e-9) / 2;           // round down to 0,5 MH
 const one = v => Math.round(v * 10) / 10;
 const regName = r => String(r || "").replace(/^REGION/, "Region");
+const short = s => String(s || "").replace(/^\d+-/, "");
 
-/** Pair givers (adj < 0) with receivers (adj > 0) by value. Returns [{from, to, mh, mhTo, amount}]. */
-function pairsFrom(rows, adj) {
-  const give = rows.filter(x => (adj[x.code] || 0) < 0).map(x => ({x, rp: -adj[x.code] * x.rate})).sort((a, b) => b.rp - a.rp);
-  const take = rows.filter(x => (adj[x.code] || 0) > 0).map(x => ({x, rp: adj[x.code] * x.rate})).sort((a, b) => b.rp - a.rp);
-  const out = [];
-  for (const r of take) {
-    for (const g of give) {
-      if (r.rp < 1 || g.rp < 1) continue;
-      const amt = Math.min(r.rp, g.rp), mh = one(amt / g.x.rate);
-      if (mh < 0.1) continue;
-      out.push({from: g.x, to: r.x, mh, mhTo: one(mh * g.x.rate / r.x.rate), amount: Math.round(mh * g.x.rate)});
-      r.rp -= amt; g.rp -= amt;
-    }
+/** Apply moves → {delta: {code: ±MH}, list: [{...move, from, to, mhTo, amount}]} */
+function applyMoves(rows, moves) {
+  const by = Object.fromEntries(rows.map(x => [x.code, x])), delta = {}, list = [];
+  for (const m of moves) {
+    const f = by[m.from], to = by[m.to];
+    if (!f || !to) continue;
+    const mhTo = one(m.mh * f.rate / to.rate);
+    delta[f.code] = one((delta[f.code] || 0) - m.mh); delta[to.code] = one((delta[to.code] || 0) + mhTo);
+    list.push({...m, f, to, mhTo, amount: Math.round(m.mh * f.rate)});
   }
-  return out;
+  return {delta, list};
 }
 
 /** Suggest moves: sites expected to run short receive from sites expected to have spare (keeping a buffer). */
 function suggest(rows, buffer) {
-  const adj = {};
+  const moves = [];
   const need = rows.filter(x => x.need > 0.5).map(x => ({x, rp: x.need * x.rate})).sort((a, b) => b.rp - a.rp);
   const spare = rows.map(x => ({x, mh: half(Math.min(x.left, x.budgetMonth - x.forecast * (1 + buffer)))})).filter(s => s.mh >= 0.5)
     .map(s => ({...s, rp: s.mh * s.x.rate})).sort((a, b) => b.rp - a.rp);
@@ -41,13 +40,22 @@ function suggest(rows, buffer) {
     if (n.rp < 1 || s.rp < 1) continue;
     const mh = half(Math.min(n.rp, s.rp) / s.x.rate);
     if (mh < 0.5) continue;
-    const amt = mh * s.x.rate;
-    adj[s.x.code] = one((adj[s.x.code] || 0) - mh);
-    adj[n.x.code] = one((adj[n.x.code] || 0) + amt / n.x.rate);
-    s.rp -= amt; n.rp -= amt;
+    moves.push({from: s.x.code, to: n.x.code, mh});
+    s.rp -= mh * s.x.rate; n.rp -= mh * s.x.rate;
   }
-  return adj;
+  return moves;
 }
+
+const status = (x, budget, buffer) => {
+  const gap = x.forecast - budget;
+  return gap > 0.5 ? tag(t("calc.stShort", {v: fmt(gap, 1)}), "red")
+    : budget - x.forecast * (1 + buffer) >= 0.5 ? tag(t("calc.stSpare", {v: fmt(budget - x.forecast, 1)}), "")
+    : tag(t("calc.stOk"), "green");
+};
+const bar = (used, budget) => {
+  const p = budget > 0 ? Math.min(1, used / budget) : (used > 0 ? 1 : 0), over = used > budget + 0.01;
+  return `<span class="cbar${over ? " over" : ""}"><i style="width:${(p * 100).toFixed(1)}%"></i></span>`;
+};
 
 export default {
   id: "calc",
@@ -60,103 +68,162 @@ export default {
     const admin = !store.access || store.access.scope === "ALL";
     const regs = [...new Set(r.rows.map(x => x.region).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
     if (!regs.includes(state.calcRegion)) state.calcRegion = regs[0] || "";
-    const reg = state.calcRegion;
+    const reg = state.calcRegion, sk = key + "|" + reg;
     const dIn = +monthEnd(key).slice(8), dDone = +r.cut.slice(8), dLeft = Math.max(0, dIn - dDone);
     const buffer = state.calcBuffer, basis = state.calcBasis === "pace" ? "pace" : "plan";
     const rows = r.rows.filter(x => x.rate && x.region === reg && (x.budgetMonth > 0 || x.actual > 0)).map(x => {
-      // "plan": the rest of the month is assumed to use at least its planned budget (safe for givers);
-      // "pace": the rest of the month follows the usage so far.
+      // "plan": the rest of the month uses at least its planned budget (safe for givers); "pace": it follows usage so far.
       const perDay = dDone ? x.actual / dDone : 0, planLeft = Math.max(0, x.budgetMonth - x.budgetToDate);
       const forecast = !dDone ? x.budgetMonth : x.actual + (basis === "pace" ? perDay * dLeft : Math.max(perDay * dLeft, planLeft));
       return {...x, perDay, forecast, need: forecast - x.budgetMonth, left: x.budgetMonth - x.actual};
-    }).sort((a, b) => b.need * b.rate - a.need * a.rate);
+    }).sort((a, b) => a.cinema.localeCompare(b.cinema, undefined, {numeric: true}));
+    const by = Object.fromEntries(rows.map(x => [x.code, x]));
 
-    const store0 = state.calcAdj[key + "|" + reg] || {};
-    const adj = {}; rows.forEach(x => { if (store0[x.code]) adj[x.code] = store0[x.code]; });
-    const balance = rows.reduce((a, x) => a + (adj[x.code] || 0) * x.rate, 0);
-    const moved = rows.reduce((a, x) => a + Math.max(0, -(adj[x.code] || 0)) * x.rate, 0);
-    const pairs = pairsFrom(rows, adj);
-    const gives = x => Math.max(0, -(adj[x.code] || 0)), tooMuch = rows.filter(x => gives(x) > Math.max(0, x.left) + 1e-9);
-    const short = rows.filter(x => x.need > 0.5), spare = rows.filter(x => x.budgetMonth - x.forecast * (1 + buffer) >= 0.5);
-    const T = k => rows.reduce((a, x) => a + x[k] * x.rate, 0);
-    const afterShort = rows.filter(x => x.forecast > x.budgetMonth + (adj[x.code] || 0) + 0.5).length;
-    const tol = Math.max(10000, moved * 0.01), balTone = Math.abs(balance) < tol ? "good" : balance > 0 ? "bad" : "warn";
+    const moves = (state.calcMoves[sk] || []).filter(m => by[m.from] && by[m.to]);
+    const {delta, list} = applyMoves(rows, moves);
+    const avail = code => Math.max(0, by[code].left + (delta[code] || 0));        // what a site can still give
+    const S = (k, f = x => x[k]) => rows.reduce((a, x) => a + f(x) * x.rate, 0);
+    const totB = S("budgetMonth"), totU = S("actual"), totF = S("forecast");
+    const nShort = rows.filter(x => x.need > 0.5).length, nAfter = rows.filter(x => x.forecast > x.budgetMonth + (delta[x.code] || 0) + 0.5).length;
+    const moved = list.reduce((a, m) => a + m.amount, 0);
+    const touched = rows.filter(x => delta[x.code]);
 
     const sheetMonth = reasons.budgetMonth, monthOk = !sheetMonth || +key.slice(5) === +sheetMonth;
-    const canApply = reasons.online && monthOk && pairs.length && !tooMuch.length && balance < tol;
+    const canApply = reasons.online && monthOk && list.length;
+    const F = state.calcForm;
+    if (!by[F.from]) F.from = (rows.slice().sort((a, b) => avail(b.code) * b.rate - avail(a.code) * a.rate)[0] || {}).code || "";
+    if (!by[F.to] || F.to === F.from) F.to = (rows.filter(x => x.code !== F.from).sort((a, b) => b.need * b.rate - a.need * a.rate)[0] || {}).code || "";
+    const opt = (sel, fn) => rows.map(x => `<option value="${x.code}"${x.code === sel ? " selected" : ""}>${esc(short(x.cinema))} — ${fn(x)}</option>`).join("");
 
-    const statusAfter = x => {
-      const nb = x.budgetMonth + (adj[x.code] || 0), gap = x.forecast - nb;
-      return gap > 0.5 ? tag(t("calc.stShort", {v: fmt(gap, 1)}), "red") : nb - x.forecast * (1 + buffer) >= 0.5 ? tag(t("calc.stSpare", {v: fmt(nb - x.forecast, 1)}), "") : tag(t("calc.stOk"), "green");
-    };
-
-    c.innerHTML = header(title, t("calc.sub", {month: monthName(key), date: dateLong(r.cut)}),
-        btn(t("calc.backBudget"), {go: "budget", icon: ICON.budget})) + `
-      <div class="card calc-intro"><p>${basis === "pace" ? t("calc.howPace", {d: dDone, left: dLeft}) : t("calc.howPlan", {d: dDone, left: dLeft})} ${t("calc.how2")}</p></div>
+    c.innerHTML = header(title, t("calc.sub", {month: monthName(key), date: dateLong(r.cut)}), btn(t("calc.backBudget"), {go: "budget", icon: ICON.budget})) + `
       <div class="row calc-tools">
-        ${admin && regs.length > 1 ? `<label class="field"><span>Region</span><select class="popup" id="cReg">${regs.map(g => `<option value="${esc(g)}"${g === reg ? " selected" : ""}>${esc(regName(g))}</option>`).join("")}</select></label>`
+        ${admin && regs.length > 1 ? `<select class="popup" id="cReg" aria-label="Region">${regs.map(g => `<option value="${esc(g)}"${g === reg ? " selected" : ""}>${esc(regName(g))}</option>`).join("")}</select>`
           : `<span class="calc-reg">${ICON.lock}${esc(regName(reg))}</span>`}
-        <label class="field"><span>${t("calc.basis")}</span><select class="popup" id="cBasis"><option value="plan"${basis === "plan" ? " selected" : ""}>${t("calc.basisPlan")}</option><option value="pace"${basis === "pace" ? " selected" : ""}>${t("calc.basisPace")}</option></select></label>
-        <label class="field"><span>${t("calc.buffer")}</span><select class="popup" id="cBuf">${[0, 0.05, 0.1, 0.2].map(v => `<option value="${v}"${v === buffer ? " selected" : ""}>${v ? "+" + v * 100 + "%" : t("calc.noBuffer")}</option>`).join("")}</select></label>
-        <span class="spacer"></span>
-        <button type="button" class="btn" id="cReset">${t("calc.reset")}</button>
-        <button type="button" class="btn filled" id="cAuto">${ICON.trend}${t("calc.auto")}</button>
-      </div>` +
-      kpis(
-        kpi({label: t("calc.kBudget"), icon: ICON.budget, tint: "indigo", value: rp(T("budgetMonth")), sub: t("calc.kBudgetSub", {n: rows.length})}),
-        kpi({label: t("calc.kForecast"), icon: ICON.trend, tint: T("forecast") > T("budgetMonth") ? "red" : "blue", tone: T("forecast") > T("budgetMonth") ? "bad" : "", value: rp(T("forecast")),
-          sub: T("forecast") > T("budgetMonth") ? t("calc.kOver", {v: rp(T("forecast") - T("budgetMonth"))}) : t("calc.kUnder", {v: rp(T("budgetMonth") - T("forecast"))})}),
-        kpi({label: t("calc.kShort"), icon: ICON.alert, tint: "red", value: short.length, unit: "site", sub: t("calc.kShortSub", {n: spare.length})}),
-        kpi({label: t("calc.kBalance"), icon: ICON.check, tint: balTone === "good" ? "green" : balTone === "bad" ? "red" : "orange", tone: balTone,
-          value: (balance > 0 ? "+" : "") + rp(balance), sub: balTone === "good" ? t("calc.balOk", {v: rp(moved)}) : balance > 0 ? t("calc.balOver") : t("calc.balUnder")}),
-      ) + `
-      <div class="table-wrap"><table class="ctable">
-        <thead><tr><th>${t("col.site")}</th><th class="r">${t("budget.colRate")}</th><th class="r">${t("calc.colBudget")}</th><th class="r">${t("calc.colUsed")}</th><th class="r">${t("calc.colForecast")}</th><th class="r">${t("calc.colNeed")}</th><th class="c">${t("calc.colAdj")}</th><th class="r">${t("calc.colNew")}</th><th class="r">${t("calc.colRp")}</th><th>${t("calc.colAfter")}</th></tr></thead>
-        <tbody>${rows.map(x => { const a = adj[x.code] || 0, bad = gives(x) > Math.max(0, x.left) + 1e-9; return `<tr${a ? ` class="${a > 0 ? "c-in" : "c-out"}"` : ""}>
-          <td class="site"><b>${esc(x.cinema)}</b><span class="muted sub">${t("calc.perDay", {v: fmt(x.perDay, 1)})}</span></td>
-          <td class="r muted">${fmt(x.rate)}</td>
-          <td class="r">${fmt(x.budgetMonth, 1)}</td>
-          <td class="r">${fmt(x.actual, 1)}<span class="muted sub">${t("calc.leftShort", {v: fmt(x.left, 1)})}</span></td>
-          <td class="r">${fmt(x.forecast, 1)}</td>
-          <td class="r">${x.need > 0.5 ? `<span class="delta bad">+${fmt(x.need, 1)}</span>` : x.need < -0.5 ? `<span class="delta down">${fmt(x.need, 1)}</span>` : `<span class="muted">0</span>`}</td>
-          <td class="c"><div class="stepper${bad ? " bad" : ""}"><button type="button" data-step="-1" data-code="${x.code}" aria-label="−">−</button><input type="number" step="0.5" inputmode="decimal" data-adj="${x.code}" value="${a ? one(a) : ""}" placeholder="0"><button type="button" data-step="1" data-code="${x.code}" aria-label="+">+</button></div></td>
-          <td class="r"><b>${fmt(x.budgetMonth + a, 1)}</b></td>
-          <td class="r">${a ? `<span class="delta ${a > 0 ? "" : "down"}">${a > 0 ? "+" : "−"}${rp(Math.abs(a * x.rate))}</span>` : `<span class="muted">–</span>`}</td>
-          <td>${statusAfter(x)}</td></tr>`; }).join("") || `<tr><td colspan="10" class="muted">${t("calc.empty")}</td></tr>`}</tbody>
-      </table></div>
-      ${tooMuch.length ? notice(t("calc.tooMuch", {list: esc(tooMuch.map(x => x.cinema).join(", "))}), "", "err") : ""}
-      <div class="card">
-        <div class="card-head"><h2>${t("calc.planTitle")}</h2>${pairs.length ? `<button type="button" class="btn plain" id="cCopy">${ICON.copy}${t("calc.copy")}</button>` : ""}</div>
-        ${pairs.length ? `<ol class="cplan">${pairs.map(p => `<li><span class="cp-from"><b>${esc(p.from.cinema)}</b><small>−${fmt(p.mh, 1)} MH</small></span><span class="cp-arrow">→ ${rp(p.amount)} →</span><span class="cp-to"><b>${esc(p.to.cinema)}</b><small>+${fmt(p.mhTo, 1)} MH</small></span></li>`).join("")}</ol>
-          <p class="foot" style="margin:0">${t("calc.after", {n: afterShort})}</p>
-          ${canApply ? `<div class="row"><input type="text" class="datefield" id="cBy" placeholder="${esc(t("budget.trBy"))}" value="${esc(reasons.lastBy)}" style="max-width:220px"><input type="text" class="datefield" id="cWhy" placeholder="${esc(t("budget.trReasonPh"))}" style="flex:1;min-width:200px"><button type="button" class="btn filled" id="cApply">${t("calc.apply", {n: pairs.length})}</button></div>`
-            : `<p class="muted" style="margin:0">${!reasons.online ? t("calc.offline") : !monthOk ? t("budget.trWrongMonth", {m: monthName(key)}) : balance >= tol ? t("calc.fixBalance") : tooMuch.length ? t("calc.fixTooMuch") : ""}</p>`}`
-          : `<p class="muted" style="margin:0">${t("calc.noPlan")}</p>`}
+        <span class="muted">${t("calc.days", {d: dDone, n: dIn, left: dLeft})}</span>
       </div>
+
+      <section class="cstep">
+        <h2 class="cstep-h"><span>1</span>${t("calc.s1")}</h2>
+        <div class="ctiles">
+          <div class="ctile"><small>${t("calc.tBudget")}</small><b>${rp(totB)}</b><span>${fmt(rows.reduce((a, x) => a + x.budgetMonth, 0), 1)} MH · ${rows.length} site</span></div>
+          <div class="ctile"><small>${t("calc.tUsed", {d: dateLong(r.cut)})}</small><b>${rp(totU)}</b><span>${bar(totU, totB)}${totB ? Math.round(totU / totB * 100) : 0}% ${t("calc.ofBudget")}</span></div>
+          <div class="ctile ${totB - totU < 0 ? "bad" : ""}"><small>${t("calc.tLeft")}</small><b>${rp(totB - totU)}</b><span>${t("calc.tLeftSub", {d: dLeft})}</span></div>
+          <div class="ctile ${totF > totB ? "bad" : "good"}"><small>${t("calc.tForecast")}</small><b>${rp(totF)}</b><span>${totF > totB ? t("calc.kOver", {v: rp(totF - totB)}) : t("calc.kUnder", {v: rp(totB - totF)})}</span></div>
+        </div>
+        <div class="table-wrap"><table class="ctable">
+          <thead><tr><th>${t("col.site")}</th><th class="r">${t("calc.colBudget")}</th><th>${t("calc.colUsed")}</th><th class="r">${t("calc.colLeft")}</th><th class="r">${t("calc.colForecast")}</th><th>${t("calc.colStatus")}</th></tr></thead>
+          <tbody>${rows.map(x => `<tr>
+            <td class="site"><b>${esc(x.cinema)}</b><span class="muted sub">Rp ${fmt(x.rate)}/MH · ${t("calc.perDay", {v: fmt(x.perDay, 1)})}</span></td>
+            <td class="r">${fmt(x.budgetMonth, 1)}</td>
+            <td><div class="cused">${bar(x.actual, x.budgetMonth)}<span>${fmt(x.actual, 1)}</span></div></td>
+            <td class="r ${x.left < 0 ? "neg" : ""}">${fmt(x.left, 1)}</td>
+            <td class="r">${fmt(x.forecast, 1)}</td>
+            <td>${status(x, x.budgetMonth, buffer)}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">${t("calc.empty")}</td></tr>`}</tbody>
+        </table></div>
+        <details class="cset"><summary>${t("calc.settings")}</summary>
+          <div class="row">
+            <label class="field"><span>${t("calc.basis")}</span><select class="popup" id="cBasis"><option value="plan"${basis === "plan" ? " selected" : ""}>${t("calc.basisPlan")}</option><option value="pace"${basis === "pace" ? " selected" : ""}>${t("calc.basisPace")}</option></select></label>
+            <label class="field"><span>${t("calc.buffer")}</span><select class="popup" id="cBuf">${[0, 0.05, 0.1, 0.2].map(v => `<option value="${v}"${v === buffer ? " selected" : ""}>${v ? "+" + v * 100 + "%" : t("calc.noBuffer")}</option>`).join("")}</select></label>
+          </div>
+          <p class="muted">${basis === "pace" ? t("calc.howPace", {d: dDone, left: dLeft}) : t("calc.howPlan", {d: dDone, left: dLeft})}</p>
+        </details>
+      </section>
+
+      <section class="cstep">
+        <h2 class="cstep-h"><span>2</span>${t("calc.s2")}</h2>
+        <div class="card cform">
+          <label class="field"><span>${t("calc.from")}</span><select class="popup" id="cFrom">${opt(F.from, x => t("calc.optLeft", {v: fmt(avail(x.code), 1)}))}</select></label>
+          <span class="cform-arrow" aria-hidden="true">→</span>
+          <label class="field"><span>${t("calc.to")}</span><select class="popup" id="cTo">${opt(F.to, x => x.need > 0.5 ? t("calc.optNeed", {v: fmt(x.need, 1)}) : t("calc.optOk"))}</select></label>
+          <label class="field cmh"><span>${t("calc.mh")}</span><input type="number" id="cMh" min="0.5" step="0.5" inputmode="decimal" value="${F.mh || ""}" placeholder="0"></label>
+          <button type="button" class="btn filled" id="cAdd">${ICON.plus || "+"} ${t("calc.add")}</button>
+          <p class="cprev" id="cPrev"></p>
+        </div>
+        <div class="row">
+          <button type="button" class="btn" id="cAuto">${ICON.trend}${t("calc.auto")}</button>
+          ${list.length ? `<button type="button" class="btn plain" id="cClear">${t("calc.reset")}</button>` : ""}
+          <span class="spacer"></span>
+          <span class="muted">${t("calc.autoHint", {n: nShort})}</span>
+        </div>
+        ${list.length ? `<ol class="cplan">${list.map((m, i) => `<li>
+            <span class="cp-from"><b>${esc(short(m.f.cinema))}</b><small>−${fmt(m.mh, 1)} MH</small></span>
+            <span class="cp-arrow">→ ${rp(m.amount)} →</span>
+            <span class="cp-to"><b>${esc(short(m.to.cinema))}</b><small>+${fmt(m.mhTo, 1)} MH</small></span>
+            <button type="button" class="cp-del" data-del="${i}" aria-label="${esc(t("calc.del"))}" title="${esc(t("calc.del"))}">×</button></li>`).join("")}</ol>`
+          : `<p class="muted cempty">${t("calc.noPlan")}</p>`}
+      </section>
+
+      <section class="cstep">
+        <h2 class="cstep-h"><span>3</span>${t("calc.s3")}</h2>
+        ${list.length ? `
+        <div class="ctiles">
+          <div class="ctile"><small>${t("calc.rMoved")}</small><b>${rp(moved)}</b><span>${t("calc.rMoves", {n: list.length})}</span></div>
+          <div class="ctile ${nAfter ? "bad" : "good"}"><small>${t("calc.rShort")}</small><b>${nAfter} <em>/ ${nShort}</em></b><span>${nAfter ? t("calc.rShortSub") : t("calc.rAllOk")}</span></div>
+        </div>
+        <div class="table-wrap"><table class="ctable">
+          <thead><tr><th>${t("col.site")}</th><th class="r">${t("calc.colBudget")}</th><th class="r">${t("calc.colChange")}</th><th class="r">${t("calc.colNew")}</th><th class="r">${t("calc.colLeftNew")}</th><th>${t("calc.colStatus")}</th></tr></thead>
+          <tbody>${touched.map(x => { const d = delta[x.code], nb = x.budgetMonth + d; return `<tr class="${d > 0 ? "c-in" : "c-out"}">
+            <td class="site"><b>${esc(x.cinema)}</b></td>
+            <td class="r muted">${fmt(x.budgetMonth, 1)}</td>
+            <td class="r"><b class="${d > 0 ? "up" : "down"}">${d > 0 ? "+" : "−"}${fmt(Math.abs(d), 1)}</b><span class="muted sub">${d > 0 ? "+" : "−"}${rp(Math.abs(d * x.rate))}</span></td>
+            <td class="r"><b>${fmt(nb, 1)}</b></td>
+            <td class="r">${fmt(nb - x.actual, 1)}</td>
+            <td>${status(x, nb, buffer)}</td></tr>`; }).join("")}</tbody>
+        </table></div>
+        <div class="row">
+          <button type="button" class="btn" id="cCopy">${ICON.copy}${t("calc.copy")}</button>
+          <span class="spacer"></span>
+          ${canApply ? `<input type="text" class="datefield" id="cBy" placeholder="${esc(t("budget.trBy"))}" value="${esc(reasons.lastBy)}" style="max-width:200px">
+            <input type="text" class="datefield" id="cWhy" placeholder="${esc(t("budget.trReasonPh"))}" style="flex:1;min-width:180px">
+            <button type="button" class="btn filled" id="cApply">${t("calc.apply", {n: list.length})}</button>`
+            : `<span class="muted">${!reasons.online ? t("calc.offline") : t("budget.trWrongMonth", {m: monthName(key)})}</span>`}
+        </div>` : `<p class="muted cempty">${t("calc.s3Empty")}</p>`}
+      </section>
       <p class="foot">${t("calc.foot")}</p>`;
 
-    const save = next => { state.calcAdj[key + "|" + reg] = next; app.rerender(); };
+    // Live preview of the move being typed (no re-render, so the cursor stays put).
+    const prev = () => {
+      const f = by[c.querySelector("#cFrom").value], to = by[c.querySelector("#cTo").value], mh = +String(c.querySelector("#cMh").value).replace(",", ".");
+      F.from = f && f.code; F.to = to && to.code; F.mh = mh || "";
+      const el = c.querySelector("#cPrev"), add = c.querySelector("#cAdd");
+      let msg = "", ok = false;
+      if (!f || !to) msg = "";
+      else if (f.code === to.code) msg = `<span class="bad">${t("calc.eSame")}</span>`;
+      else if (!(mh > 0)) msg = t("calc.pHint", {v: fmt(avail(f.code), 1), s: esc(short(f.cinema))});
+      else if (mh > avail(f.code) + 1e-9) msg = `<span class="bad">${t("calc.eTooMuch", {v: fmt(avail(f.code), 1), s: esc(short(f.cinema))})}</span>`;
+      else {
+        const mhTo = one(mh * f.rate / to.rate); ok = true;
+        msg = t("calc.preview", {a: esc(short(f.cinema)), mh: fmt(mh, 1), left: fmt(avail(f.code) - mh, 1), rp: rp(mh * f.rate),
+          b: esc(short(to.cinema)), mhTo: fmt(mhTo, 1), nb: fmt(to.budgetMonth + (delta[to.code] || 0) + mhTo, 1)});
+      }
+      el.innerHTML = msg; add.disabled = !ok;
+    };
+    prev();
+    const save = next => { state.calcMoves[sk] = next; app.rerender(); };
+    on(c, "#cFrom", "change", prev); on(c, "#cTo", "change", prev); on(c, "#cMh", "input", prev);
+    on(c, "#cAdd", "click", () => { const mh = one(+String(c.querySelector("#cMh").value).replace(",", ".")); F.mh = ""; save([...moves, {from: F.from, to: F.to, mh}]); });
+    on(c, "#cMh", "keydown", (el, e) => { if (e && e.key === "Enter" && !c.querySelector("#cAdd").disabled) c.querySelector("#cAdd").click(); });
+    on(c, "[data-del]", "click", b => save(moves.filter((_, i) => i !== +b.dataset.del)));
+    on(c, "#cClear", "click", () => save([]));
+    on(c, "#cAuto", "click", () => { const s = suggest(rows, buffer); save(s); hud(s.length ? t("calc.autoDone") : t("calc.autoNone")); });
     on(c, "#cReg", "change", el => { state.calcRegion = el.value; app.rerender(); });
     on(c, "#cBasis", "change", el => { state.calcBasis = el.value; app.rerender(); });
     on(c, "#cBuf", "change", el => { state.calcBuffer = +el.value; app.rerender(); });
-    on(c, "#cReset", "click", () => save({}));
-    on(c, "#cAuto", "click", () => { const s = suggest(rows, buffer); save(s); hud(Object.keys(s).length ? t("calc.autoDone") : t("calc.autoNone")); });
-    on(c, "[data-step]", "click", b => { const k = b.dataset.code, v = one((adj[k] || 0) + (+b.dataset.step) * 0.5); const n = {...adj}; if (v) n[k] = v; else delete n[k]; save(n); });
-    on(c, "[data-adj]", "change", el => { const k = el.dataset.adj, v = one(+String(el.value).replace(",", ".") || 0); const n = {...adj}; if (v) n[k] = v; else delete n[k]; save(n); });
     on(c, "#cCopy", "click", () => {
-      const txt = [t("calc.copyHead", {r: regName(reg), m: monthName(key)}), ...pairs.map((p, i) => `${i + 1}. ${p.from.cinema} → ${p.to.cinema}: −${fmt(p.mh, 1)} MH / +${fmt(p.mhTo, 1)} MH (${rp(p.amount)})`)].join("\n");
+      const txt = [t("calc.copyHead", {r: regName(reg), m: monthName(key)}),
+        ...list.map((m, i) => `${i + 1}. ${m.f.cinema} → ${m.to.cinema}: −${fmt(m.mh, 1)} MH / +${fmt(m.mhTo, 1)} MH (${rp(m.amount)})`)].join("\n");
       copyText(txt).then(() => hud(t("calc.copied")));
     });
     on(c, "#cApply", "click", async b => {
-      const by = c.querySelector("#cBy").value.trim(), why = c.querySelector("#cWhy").value.trim() || t("calc.reasonDefault");
+      const who = c.querySelector("#cBy").value.trim(), why = c.querySelector("#cWhy").value.trim() || t("calc.reasonDefault");
       b.disabled = true; let ok = 0;
-      for (const p of pairs) {
-        b.textContent = t("calc.applying", {i: ok + 1, n: pairs.length});
-        const res = await addTransfer({month: key, from: p.from.code, to: p.to.code, mh: p.mh, reason: why, by});
+      for (const m of list) {
+        b.textContent = t("calc.applying", {i: ok + 1, n: list.length});
+        const res = await addTransfer({month: key, from: m.from, to: m.to, mh: m.mh, reason: why, by: who});
         if (!res.ok) { hud(t("budget.trFail", {e: res.error || "?"})); break; }
         ok++;
       }
-      if (ok === pairs.length) { state.calcAdj[key + "|" + reg] = {}; hud(t("calc.applied", {n: ok})); }
+      if (ok === list.length) { state.calcMoves[sk] = []; hud(t("calc.applied", {n: ok})); }
       app.rerender();
     });
   },
