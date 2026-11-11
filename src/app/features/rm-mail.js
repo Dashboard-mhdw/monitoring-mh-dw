@@ -5,7 +5,7 @@ import { esc } from "../ui/dom.js";
 import { _dicts } from "../i18n.js";
 
 const CAL = _dicts.id._cal;
-const DASH = "https://micaelivansaputra-blip.github.io/monitoring-mh-dw/";
+const DASH = "https://dashboard-mhdw.github.io/monitoring-mh-dw/";
 const n0 = v => Math.round(v || 0).toLocaleString("id-ID");
 const pct = v => Math.round((v || 0) * 100) + "%";
 const rpS = v => "Rp " + (Math.abs(v) >= 1e6 ? (v / 1e6).toLocaleString("id-ID", {maximumFractionDigits: 1}) + " jt" : n0(v));

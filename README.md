@@ -2,7 +2,7 @@
 
 Dashboard pemakaian **Man Hour Daily Worker (PKDW)** untuk 59 site, bersumber dari spreadsheet **Man Hour Usage**.
 
-**Link:** https://micaelivansaputra-blip.github.io/monitoring-mh-dw/
+**Link:** https://dashboard-mhdw.github.io/monitoring-mh-dw/
 
 ## Cara kerja
 
