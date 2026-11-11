@@ -4,6 +4,7 @@ import { reasons, addTransfer, cancelTransfer } from "../reasons.js";
 import { fmt, signed, monthName, monthOnly, monthEnd, dateLong, YESTERDAY, rp } from "../format.js";
 import { esc, ICON, on, copyText, copyRich, hud } from "../ui/dom.js";
 import * as Mail from "./budget-mail.js";
+import * as RM from "./rm-mail.js";
 import { header, kpi, kpis, notice, segmented, btn, tag, legend } from "../ui/components.js";
 import { groupedChart } from "../ui/charts.js";
 import { openSheet } from "../ui/sheet.js";
@@ -166,6 +167,7 @@ export default {
     const scoped = r.rows.filter(x => !reg || x.region === reg);
     const cnt = st => scoped.filter(x => st.includes(x.status)).length;
     const list = r.rows.filter(match).sort((a, b) => (b.amountActual - b.amountToDate) - (a.amountActual - a.amountToDate) || b.actual - a.actual);
+    const rmRegs = RM.regions(r), rmReg = rmRegs.includes(state.rmMailRegion) ? state.rmMailRegion : (rmRegs[0] || "");
     const filters = [["active", t("budget.fActive")], ["over", t("budget.fOver", {n: cnt(["over"])})], ["nobudget", t("budget.fNoBudget", {n: cnt(["nobudget", "early"])})], ["ok", t("budget.fOk", {n: cnt(["ok", "near"])})], ["all", t("budget.fAll")]];
     const periods = r.periods.map(p => ({label: p.label, sub: "W" + p.week, budget: p.budget, actual: p.actual, hl: p.actual > p.budgetToDate && p.elapsed, tip: periodTip(p)}));
 
@@ -218,7 +220,12 @@ export default {
       ${!admin ? "" : `<div class="row" style="margin-top:var(--s4)"><h2 class="section-head" style="margin:0">${t("budget.mailTitle")}</h2><span class="spacer"></span>
         ${btn(t("budget.copySubject"), {id: "bmSubj", icon: ICON.copy})}${btn(t("budget.copyMail"), {id: "bmCopy", filled: true, icon: ICON.copy})}</div>
       <p class="foot" style="margin-top:-8px">${t("budget.mailNote")}</p>
-      <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(Mail.subject(r))}</p>${Mail.mailHTML(r)}</div>`}`;
+      <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(Mail.subject(r))}</p>${Mail.mailHTML(r)}</div>
+      ${rmRegs.length ? `<div class="row" style="margin-top:var(--s6)"><h2 class="section-head" style="margin:0">${t("budget.rmTitle")}</h2><span class="spacer"></span>
+        ${btn(t("budget.copySubject"), {id: "rmSubj", icon: ICON.copy})}${btn(t("budget.copyMail"), {id: "rmCopy", filled: true, icon: ICON.copy})}</div>
+      <p class="foot" style="margin-top:-8px">${t("budget.rmNote")}</p>
+      <div class="row" style="margin-bottom:var(--s3)">${segmented("rmr", rmReg, rmRegs.map(x => [x, x.replace(/^REGION/, "Region")]), t("budget.rmTitle"))}</div>
+      <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 4px"><b>To:</b> RM ${esc(rmReg.replace(/^REGION/, "Region"))}</p><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(RM.subject(r, rmReg))}</p>${RM.mailHTML(r, rmReg)}</div>` : ""}`}`;
 
     wireCut(); wireTransfer(c, r, app);
     on(c, "[data-breg]", "click", b => { state.budgetRegion = b.dataset.breg; app.rerender(); });
@@ -227,5 +234,8 @@ export default {
     on(c, "#bvCopy", "click", () => copyText(summaryText(r), t("budget.copied")));
     on(c, "#bmCopy", "click", () => copyRich(Mail.mailHTML(r), Mail.mailText(r), t("budget.mailCopied")));
     on(c, "#bmSubj", "click", () => copyText(Mail.subject(r), t("budget.subjectCopied")));
+    on(c, "[data-rmr]", "click", b => { state.rmMailRegion = b.dataset.rmr; app.rerender(); });
+    on(c, "#rmCopy", "click", () => copyRich(RM.mailHTML(r, rmReg), RM.mailText(r, rmReg), t("budget.mailCopied")));
+    on(c, "#rmSubj", "click", () => copyText(RM.subject(r, rmReg), t("budget.subjectCopied")));
   },
 };

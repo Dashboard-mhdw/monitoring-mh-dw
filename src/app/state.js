@@ -23,6 +23,7 @@ export const state = {
   alertMode: "flagged",
   alertMailRegion: "",
   budgetRegion: "",               // admin: region card selected on the Budget page            // "" = one email to all regions; "REGION n" = only that region (admin)
+  rmMailRegion: "",               // Budget page: region shown in the weekly RM reminder email
   calcRegion: "",                 // Kalkulator: region being simulated
   calcBasis: "plan",              // "plan" (safe) | "pace"
   calcBuffer: 0.1,                // keep +10% above the forecast before calling a site "spare"

@@ -450,6 +450,7 @@ export default {
   "daily.xTitle": "Daily DW MH per site · {month}",
   "budget.mailTitle": "FYI email to Kak Cinthia", "budget.copyMail": "Copy email", "budget.copySubject": "Copy subject",
   "budget.mailNote": "The email and region table follow the \"up to\" date above and refresh with every data update. The email itself is in Bahasa Indonesia. Click Copy email and paste into Outlook/Gmail (the table is included).",
+  "budget.rmTitle": "Weekly reminder email to RMs", "budget.rmNote": "One email per region with only that region's numbers (no national/other-region figures). Pick a region, click Copy email and paste into Outlook/Gmail — chart & table included. Follows the \"up to\" date above (on Wednesday: defaults to Tuesday).",
   "budget.mailCopied": "Email copied, ready to paste", "budget.subjectCopied": "Subject copied",
   "alert.from": "From", "alert.to": "to", "alert.range": "Date range", "alert.pWeekend": "Fri–Sun", "alert.p7": "7 days",
   "alert.rangeInfo": "{n} days · one row per site per day", "alert.missingDates": "{n} dates not in the data yet",

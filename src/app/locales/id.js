@@ -450,6 +450,7 @@ export default {
   "daily.xTitle": "MH DW harian per site · {month}",
   "budget.mailTitle": "Email FYI ke Kak Cinthia", "budget.copyMail": "Salin email", "budget.copySubject": "Salin subjek",
   "budget.mailNote": "Isi email & tabel per region ikut tanggal \"s.d.\" di atas dan ter-update otomatis tiap data diperbarui. Klik Salin email lalu tempel di Outlook/Gmail (tabel ikut tersalin).",
+  "budget.rmTitle": "Email reminder mingguan ke RM", "budget.rmNote": "Satu email per region, hanya angka region itu (tanpa angka nasional/region lain). Pilih region, klik Salin email lalu tempel di Outlook/Gmail — chart & tabel ikut tersalin. Isi ikut tanggal \"s.d.\" di atas (Rabu: default s.d. Selasa).",
   "budget.mailCopied": "Email disalin, tinggal tempel", "budget.subjectCopied": "Subjek disalin",
   "alert.from": "Dari", "alert.to": "s.d.", "alert.range": "Rentang tanggal", "alert.pWeekend": "Jum–Min", "alert.p7": "7 hari",
   "alert.rangeInfo": "{n} hari · satu baris per site per hari", "alert.missingDates": "{n} tanggal belum ada di data",
