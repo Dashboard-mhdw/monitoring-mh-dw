@@ -17,13 +17,13 @@
  * Di sini hanya ada HASH token-nya. Token region hanya bisa melihat & mengubah site di region itu; token admin semua.
  */
 const TOKENS = {
-  "052f34e3dab1d7d9b28eeeafe0cf4c491ed67676b834b7cd21d24c2fc6995337": "ALL",
-  "3cbf7095c60301cab4adfd52c97602064c99fc600388ef0501248b9dd822a09a": "REGION 1",
-  "fcdedb2f543e9f194efc33cfe721eab48938fad4f5832b3ae8152c7dc0fcb1fd": "REGION 2",
-  "4a091a0677a0e7e74e68c7204066b634bd17810e8a20fef88b53f4e5434a6c62": "REGION 3",
-  "254ffe58d4900b29971118290fc88905140bbb321c1b445360a061ef1427dab1": "REGION 4",
-  "5165f0ea1c27c8e925864d110da596b71e9bf64d122ae45b6070bdfbfd18cb85": "REGION 5",
-  "0f9dd65dd3477c659d46fed832b15bb9194d936ffdbd8e01616bcbf49b3b24df": "REGION 6",
+  "4ddcc44796e9dfd5002985977670f591e842b904713285b381a3de6ce330d75c": "ALL",
+  "c30b66de0036ed4ab1ba040bc67c77014e1dc96dc6c4c2abc271e107e6f95b15": "REGION 1",
+  "93ab018d21922f2b2e74b5cec368c56e80cfb6b47468f5b241e73ac188a05ccd": "REGION 2",
+  "96a42f67159d79557461030fd6b5a9405a4e35e8daefc37fad01316a51cb71a9": "REGION 3",
+  "b426edca485e0e625d3f128ec2e4aef59bfa9b00f871fe4f7d65f76b87233bc7": "REGION 4",
+  "f4ab17bcc590dc6d9cc4d55a374897a3611041cf9ac608738118843e4b9b2fcc": "REGION 5",
+  "309a873505d56d42f5461ae55c2fcc1371db1a8891815efc64f38e4724ec4a67": "REGION 6",
 };
 const BUDGET_SHEET = 'Budget per cinema';
 const SHEET_ID = '1Adrxk9YqDGanMTgkuxh3RS-8X5W83-9Gy9kzk62BNsw';   // spreadsheet budget (dipakai kalau script ini berdiri sendiri, tidak terpasang di spreadsheet)

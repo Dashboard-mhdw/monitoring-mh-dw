@@ -236,8 +236,6 @@ export default {
   "budget.colBudgetM": "Budget bulan (MH)",
   "budget.colUsed": "Terpakai (MH)",
   "budget.colPace": "Pemakaian vs jadwal",
-  "budget.colLeftMh": "Sisa MH · Rp",
-  "budget.colFtRate": "FT · rate",
   "budget.colAdmits": "Admits MTD",
   "budget.colProd": "Prod MTD",
   "budget.ofBudget": "budget {v}",

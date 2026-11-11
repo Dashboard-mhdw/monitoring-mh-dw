@@ -236,8 +236,6 @@ export default {
   "budget.colBudgetM": "Month budget (MH)",
   "budget.colUsed": "Used (MH)",
   "budget.colPace": "Usage vs plan",
-  "budget.colLeftMh": "Left MH · Rp",
-  "budget.colFtRate": "FT · rate",
   "budget.colAdmits": "Admits MTD",
   "budget.colProd": "Prod MTD",
   "budget.ofBudget": "budget {v}",
