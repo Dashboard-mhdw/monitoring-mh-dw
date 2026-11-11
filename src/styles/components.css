@@ -455,7 +455,7 @@ body.locked .navbar .compact-title{display:none}
 @keyframes loginIn{from{transform:translateY(12px);opacity:0}}
 .login::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.9}
 .login-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-.login-mark{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--blue);color:var(--on-accent);box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.login-mark{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(160deg,#2a2a2e,#111113);color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.18)}
 .login-kicker{font:700 11px/1.2 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--label-3)}
 .login-title{margin:0;font:700 26px/1.15 var(--font-display);letter-spacing:-.025em;color:var(--label)}
 .login-title span{color:var(--label-3)}
@@ -556,3 +556,5 @@ body.locked .navbar .compact-title{display:none}
 .cp-del{width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:var(--label-3);font-size:18px;cursor:pointer}
 .cp-del:hover{background:var(--red-tint);color:var(--red-text)}
 @media (max-width:700px){.cform{grid-template-columns:1fr}.cform-arrow{display:none}.cplan li{grid-template-columns:24px minmax(0,1fr) 28px}.cp-arrow,.cp-to{grid-column:2}.cp-del{grid-column:3;grid-row:1}}
+
+.login-mark img,.brand-icon img{display:block;object-fit:contain}

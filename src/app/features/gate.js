@@ -15,7 +15,7 @@ export function renderGate(c, onOpen) {
   document.body.insertAdjacentHTML("beforeend", `
     <div class="gate" id="gate">
       <form class="login" id="lockForm" autocomplete="off">
-        <div class="login-head"><div class="login-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5A8 8 0 1 1 11.5 4M12 8v4l8-8M15 4h5v5"/></svg></div><span class="login-kicker">Daily Worker · Operations</span></div>
+        <div class="login-head"><div class="login-mark" aria-hidden="true"><img src="src/assets/logo.png" alt="" width="30" height="30"></div><span class="login-kicker">Daily Worker · Operations</span></div>
         <h1 class="login-title">Monitoring <span>MH DW</span></h1>
         <p class="login-sub">${t("lock.sub")}</p>
         <div class="login-field">

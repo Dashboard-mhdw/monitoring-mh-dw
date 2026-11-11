@@ -7,13 +7,13 @@
 <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Monitoring MH DW</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111113'/%3E%3Cpath transform='translate(4 4)' d='M20 12.5A8 8 0 1 1 11.5 4M12 8v4l8-8M15 4h5v5' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="src/assets/favicon.png?v=d964494f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="src/styles/tokens.css?v=51e9f8ab">
 <link rel="stylesheet" href="src/styles/base.css?v=d8e4db78">
 <link rel="stylesheet" href="src/styles/layout.css?v=043fb050">
-<link rel="stylesheet" href="src/styles/components.css?v=e118e3c5">
+<link rel="stylesheet" href="src/styles/components.css?v=5a237c8b">
 <!-- Domain rules shared with the Node build scripts -->
 <script src="core.js?v=b5e85cc7"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -29,7 +29,7 @@
   "./src/app/features/check.js": "./src/app/features/check.js?v=5b159244",
   "./src/app/features/daily.js": "./src/app/features/daily.js?v=dfb12225",
   "./src/app/features/exports.js": "./src/app/features/exports.js?v=64cb75e2",
-  "./src/app/features/gate.js": "./src/app/features/gate.js?v=c2726231",
+  "./src/app/features/gate.js": "./src/app/features/gate.js?v=6f39e71a",
   "./src/app/features/h1.js": "./src/app/features/h1.js?v=e8ec252f",
   "./src/app/features/map.js": "./src/app/features/map.js?v=295002d1",
   "./src/app/features/more.js": "./src/app/features/more.js?v=042b40ed",
@@ -65,7 +65,7 @@
 <div class="app">
   <aside class="sidebar" data-i18n-aria="aria.nav">
     <div class="brand">
-      <div class="brand-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5A8 8 0 1 1 11.5 4M12 8v4l8-8M15 4h5v5"/></svg></div>
+      <div class="brand-icon"><img src="src/assets/logo.png?v=48cbf94f" alt="" width="24" height="24"></div>
       <div><b>MH Daily Worker</b><span data-i18n="brand.sub">Operations Monitoring</span></div>
     </div>
     <button class="side-search" id="sideSearch" type="button" data-act="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg><span data-i18n="search.btn">Cari</span><kbd id="sideKbd">⌘K</kbd></button>
