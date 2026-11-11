@@ -75,7 +75,7 @@
    "name": "6-LM KUTA",
    "lat": -8.721,
    "lng": 115.17,
-   "city": "Kuta"
+   "city": "Bali"
   },
   "7": {
    "region": "REGION 1",
@@ -99,7 +99,7 @@
    "name": "10-LIPPO PLAZA JOGJA",
    "lat": -7.783,
    "lng": 110.399,
-   "city": "Yogyakarta"
+   "city": "Jogja"
   },
   "11": {
    "region": "REGION 2",
@@ -131,7 +131,7 @@
    "name": "16-LIPPO PLAZA BUTON",
    "lat": -5.471,
    "lng": 122.6,
-   "city": "Baubau"
+   "city": "Buton"
   },
   "17": {
    "region": "REGION 4",
@@ -211,7 +211,7 @@
    "name": "30-PLAZA RENON",
    "lat": -8.673,
    "lng": 115.238,
-   "city": "Denpasar"
+   "city": "Bali"
   },
   "31": {
    "region": "REGION 3",
@@ -355,7 +355,7 @@
    "name": "51-LIPPO PLAZA SUNSET",
    "lat": -8.699,
    "lng": 115.173,
-   "city": "Kuta"
+   "city": "Bali"
   },
   "52": {
    "region": "REGION 6",
@@ -363,7 +363,7 @@
    "name": "52-SIDEWALK JIMBARAN",
    "lat": -8.782,
    "lng": 115.168,
-   "city": "Jimbaran"
+   "city": "Bali"
   },
   "53": {
    "region": "REGION 5",
@@ -379,7 +379,7 @@
    "name": "54-MAL MANDAU CITY",
    "lat": 1.283,
    "lng": 101.23,
-   "city": "Duri"
+   "city": "Dumai"
   },
   "56": {
    "region": "REGION 2",
@@ -395,7 +395,7 @@
    "name": "57-DISTRIK 1 MEIKARTA",
    "lat": -6.3175,
    "lng": 107.168,
-   "city": "Cikarang"
+   "city": "Bekasi"
   },
   "58": {
    "region": "REGION 1",
@@ -443,7 +443,7 @@
    "name": "64-SIANTAR CITY SQUARE",
    "lat": 2.96,
    "lng": 99.062,
-   "city": "Pematangsiantar"
+   "city": "Siantar"
   },
   "65": {
    "region": "REGION 1",
@@ -489,9 +489,9 @@
    "region": "REGION 3",
    "target": 14,
    "name": "70-MALL THE GALERIA",
-   "lat": -8.725,
-   "lng": 115.18,
-   "city": "Bali (perlu dicek)"
+   "lat": -3.3186,
+   "lng": 114.5944,
+   "city": "Banjarmasin"
   },
   "71": {
    "region": "REGION 1",
@@ -505,9 +505,9 @@
    "region": "REGION 6",
    "target": 14,
    "name": "72-PARAGON SQUARE MALL",
-   "lat": -0.879,
-   "lng": 131.261,
-   "city": "Sorong (perlu dicek)"
+   "lat": -0.8762,
+   "lng": 131.2558,
+   "city": "Sorong"
   }
  }
 }

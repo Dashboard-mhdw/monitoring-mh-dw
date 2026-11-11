@@ -221,23 +221,26 @@
     if(!periods.length) return null;
     periods.forEach(p => { p.days = daysBetween(p.start, p.end); p.elapsed = !cut || cut < p.start ? 0 : Math.min(p.days, daysBetween(p.start, cut)); p.label = `${+p.start.slice(8)}–${+p.end.slice(8)}`; });
     const sd = new Map(); // code -> per-day pkdw / admits by iso
-    m.rows.forEach(r => { let s = sd.get(r.code); if(!s){ s = {code:r.code, cinema:r.cinema, formats:[], byIso:{}, admIso:{}, admMissing:{}}; sd.set(r.code, s); }
-      s.formats.push(r.format); r.days.forEach((x,i) => { const iso = m.dates[i].iso; s.byIso[iso] = (s.byIso[iso]||0) + x.pkdw; s.admIso[iso] = (s.admIso[iso]||0) + (x.admits||0); if(x.admits==null && x.filled) s.admMissing[iso] = true; }); });
+    m.rows.forEach(r => { let s = sd.get(r.code); if(!s){ s = {code:r.code, cinema:r.cinema, formats:[], byIso:{}, admIso:{}, totIso:{}, admMissing:{}}; sd.set(r.code, s); }
+      s.formats.push(r.format); r.days.forEach((x,i) => { const iso = m.dates[i].iso; s.byIso[iso] = (s.byIso[iso]||0) + x.pkdw; s.admIso[iso] = (s.admIso[iso]||0) + (x.admits||0); s.totIso[iso] = (s.totIso[iso]||0) + (x.pkdw||0) + (x.pkwt||0); if(x.admits==null && x.filled) s.admMissing[iso] = true; }); });
     const bOf = code => { const b = (budget.sites||{})[code]; return Array.isArray(b) ? {mh:b} : (b || {}); };
-    Object.keys(budget.sites||{}).forEach(code => { if(!sd.has(code) && (bOf(code).mh||[]).some(v => v>0)) sd.set(code, {code, cinema:code+"-(tidak ada di sheet)", formats:[], byIso:{}, admIso:{}, admMissing:{}}); });
+    Object.keys(budget.sites||{}).forEach(code => { if(!sd.has(code) && (bOf(code).mh||[]).some(v => v>0)) sd.set(code, {code, cinema:code+"-(tidak ada di sheet)", formats:[], byIso:{}, admIso:{}, totIso:{}, admMissing:{}}); });
     const hasAdmits = Object.keys(budget.sites||{}).some(c => Array.isArray(bOf(c).admits));
     const rows = [...sd.values()].map(s => {
       const b = bOf(s.code), mh = b.mh || [];
       const per = periods.map(p => {
         const bud = mh[p.idx] || 0;
-        let act = 0, adm = 0, miss = 0; for(let k=0;k<p.days;k++){ const iso = isoAdd(p.start, k); if(cut && iso <= cut){ act += s.byIso[iso] || 0; adm += s.admIso[iso] || 0; if(s.admMissing[iso]) miss++; } }
-        const o = {label:p.label, week:p.week, start:p.start, end:p.end, budget:bud, budgetToDate: bud * p.elapsed / p.days, actual:act, elapsed:p.elapsed, days:p.days, admitsActual:adm, admitsMissingDays:miss};
+        let act = 0, adm = 0, tmh = 0, miss = 0; for(let k=0;k<p.days;k++){ const iso = isoAdd(p.start, k); if(cut && iso <= cut){ act += s.byIso[iso] || 0; adm += s.admIso[iso] || 0; tmh += s.totIso[iso] || 0; if(s.admMissing[iso]) miss++; } }
+        const o = {label:p.label, week:p.week, start:p.start, end:p.end, budget:bud, budgetToDate: bud * p.elapsed / p.days, actual:act, elapsed:p.elapsed, days:p.days, admitsActual:adm, mhTotal:tmh, admitsMissingDays:miss};
         if(b.admits){ const ba = b.admits[p.idx] || 0; o.admitsBudget = ba; o.admitsBudgetToDate = ba * p.elapsed / p.days;
           o.flex = p.elapsed && b.prod ? Math.max(0, adm / (b.prod * 0.9) - (b.fth ? b.fth[p.idx] : 0) * p.elapsed / p.days) : 0; }
         return o;
       });
       const sum = k => per.reduce((a,x) => a + (x[k]||0), 0);
-      const r = {code:s.code, cinema:s.cinema, formats:s.formats, periods:per, budgetMonth:sum("budget"), budgetToDate:sum("budgetToDate"), actual:sum("actual"), prod:b.prod||null};
+      const r = {code:s.code, cinema:s.cinema, formats:s.formats, periods:per, budgetMonth:sum("budget"), budgetToDate:sum("budgetToDate"), actual:sum("actual"), prod:b.prod||null,
+        admitsActual:sum("admitsActual"), mhTotal:sum("mhTotal")};
+      r.prodActual = r.mhTotal > 0 ? r.admitsActual / r.mhTotal : null;   // productivity MTD = total admits ÷ total MH (PKWT + PKDW)
+      r.admitsBudgetMonth = 0; r.admitsBudgetToDate = 0;
       if(b.admits){ r.admitsBudgetMonth = sum("admitsBudget"); r.admitsBudgetToDate = sum("admitsBudgetToDate"); r.admitsActual = sum("admitsActual"); r.flex = sum("flex");
         r.admitsVar = r.admitsBudgetToDate ? r.admitsActual / r.admitsBudgetToDate - 1 : null; r.overFlex = r.actual - r.flex; r.admitsMissingDays = sum("admitsMissingDays"); }
       r.variance = r.actual - r.budgetToDate; r.remaining = r.budgetMonth - r.actual;
@@ -246,7 +249,8 @@
       return r;
     });
     const T = k => rows.reduce((a,r) => a + r[k], 0);
-    const tot = {budgetMonth:T("budgetMonth"), budgetToDate:T("budgetToDate"), actual:T("actual")};
+    const tot = {budgetMonth:T("budgetMonth"), budgetToDate:T("budgetToDate"), actual:T("actual"), admitsActual:T("admitsActual"), mhTotal:T("mhTotal")};
+    tot.prodActual = tot.mhTotal > 0 ? tot.admitsActual / tot.mhTotal : null;
     if(hasAdmits){ ["admitsBudgetMonth","admitsBudgetToDate","admitsActual","flex"].forEach(k => tot[k] = T(k)); tot.admitsVar = tot.admitsBudgetToDate ? tot.admitsActual/tot.admitsBudgetToDate - 1 : null; tot.overFlex = tot.actual - tot.flex; }
     tot.variance = tot.actual - tot.budgetToDate; tot.remaining = tot.budgetMonth - tot.actual; tot.usage = tot.budgetToDate ? tot.actual/tot.budgetToDate : null;
     const byPeriod = periods.map((p,i) => ({label:p.label, week:p.week, start:p.start, end:p.end, days:p.days, elapsed:p.elapsed,

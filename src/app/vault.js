@@ -45,7 +45,7 @@ async function open(privKey, sealed) {
 }
 
 /** Load every month (and every budget month) this entry may see.
- *  → {data: {generatedAt, source, months}, budget: {byMonth: {YYYY-MM: {...}}} | null} */
+ *  → {data: {generatedAt, source, months}, budget: {byMonth: {YYYY-MM: {...}}, admitsPL: {YYYY-MM: {code: admits}}} | null} */
 export async function loadData(entry) {
   const idx = await getJson("secure/index.json");
   const priv = await crypto.subtle.importKey("jwk", entry.key, ECDH, false, ["deriveKey"]);
@@ -54,7 +54,12 @@ export async function loadData(entry) {
     try { into[k] = await open(priv, await getJson(`secure/${dir}/${k}/${s}.json`)); }
     catch (e) { console.warn(dir, k, e); }
   }));
-  await Promise.all([grab(idx.months, "m", months), grab(idx.budgetMonths, "b", byMonth)]);
+  const admitsByYear = {};
+  await Promise.all([grab(idx.months, "m", months), grab(idx.budgetMonths, "b", byMonth), grab(idx.admitsYears, "a", admitsByYear)]);
   if (!Object.keys(months).length) throw {code: "locked_stale", message: "no month could be opened"};
-  return {data: {generatedAt: idx.generatedAt, source: idx.source, months}, budget: Object.keys(byMonth).length ? {byMonth} : null};
+  // Admits budget from the P&L file (secure/a/<YYYY>): {YYYY-MM: {code: admits}}
+  const admitsPL = {};
+  Object.values(admitsByYear).forEach(y => Object.entries((y && y.months) || {}).forEach(([k, v]) => { admitsPL[k] = v; }));
+  const anyB = Object.keys(byMonth).length;
+  return {data: {generatedAt: idx.generatedAt, source: idx.source, months}, budget: anyB ? {byMonth, admitsPL} : null};
 }

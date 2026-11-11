@@ -35,7 +35,7 @@ export const state = {
   sort: {k: "pkdw", dir: -1},
   trendN: 6,
   budgetCut: null,
-  budgetFilter: "active",
+  budgetFilter: "all",
   reasonCtx: "all",
   reasonQ: "",
   theme: "auto",

@@ -161,7 +161,7 @@ export default {
     const T = r.tot, A = r.hasAdmits, admin = !store.access || store.access.scope === "ALL";
     const regs = [...new Set(r.rows.map(x => x.region).filter(Boolean))];
     const reg = admin && regs.includes(state.budgetRegion) ? state.budgetRegion : "";
-    const flt = state.budgetFilter || "active";
+    const flt = state.budgetFilter || "all";
     const match = x => (!reg || x.region === reg) && (flt === "active" ? x.status !== "none" : flt === "all" ? true : flt === "ok" ? (x.status === "ok" || x.status === "near")
       : flt === "nobudget" ? (x.status === "nobudget" || x.status === "early") : x.status === flt);
     const scoped = r.rows.filter(x => !reg || x.region === reg);
@@ -203,17 +203,18 @@ export default {
       <div class="card chart"><div class="card-head"><h2>${t("budget.chartTitle")}</h2>${legend([["var(--label-3)", "Budget"], ["var(--blue)", "Actual"], ["var(--orange)", t("budget.legendOver")]])}</div>${groupedChart(periods, {aria: t("budget.chartTitle")})}</div>
       <div class="row"><h2 class="section-head" style="margin:0">${t("budget.perSite")}${reg ? " · " + esc(reg.replace(/^REGION/, "Region")) : ""}</h2><span class="spacer"></span>${segmented("bf", flt, filters, "Filter")}</div>
       <div class="table-wrap"><table class="btable">
-        <thead><tr><th>${t("col.site")}</th><th class="r">FT</th><th class="r">${t("budget.colRate")}</th><th class="r">${t("budget.colBudgetM")}</th><th class="r">${t("budget.colUsed")}</th><th>${t("budget.colPace")}</th><th class="r">${t("budget.colLeftMh")}</th><th class="r">${t("budget.colLeftRp")}</th><th>Status</th><th>Reason</th></tr></thead>
+        <thead><tr><th>${t("col.site")}</th><th class="r">${t("budget.colFtRate")}</th><th class="r">${t("budget.colBudgetM")}</th><th class="r">${t("budget.colUsed")}</th><th>${t("budget.colPace")}</th><th class="r">${t("budget.colLeftMh")}</th><th class="r">${t("budget.colAdmits")}</th><th class="r">${t("budget.colProd")}</th><th>Status</th><th>Reason</th></tr></thead>
         <tbody>${list.map(x => `<tr class="click" data-bsite="${x.code}">
           <td class="site"><b>${esc(x.cinema)}</b>${admin && !reg ? `<span class="muted sub">${esc((x.region || "").replace(/^REGION/, "Region"))}</span>` : ""}</td>
-          <td class="r">${x.ft || "–"}</td><td class="r muted">${x.rate ? fmt(x.rate) : "–"}</td>
+          <td class="r">${x.ft || "–"}<span class="muted sub">${x.rate ? "Rp " + fmt(x.rate) + "/jam" : "–"}</span></td>
           <td class="r">${fmt(x.budgetMonth)}</td><td class="r"><b>${fmt(x.actual)}</b></td>
           <td>${x.budgetMonth ? progress(x.actual, x.budgetToDate, x.budgetMonth, "sm") : `<span class="muted">${t("budget.noBudgetShort")}</span>`}</td>
-          <td class="r" style="${x.remaining < 0 ? "color:var(--red-text);font-weight:600" : ""}">${fmt(x.remaining)}</td>
-          <td class="r" style="${x.amountRemaining < 0 ? "color:var(--red-text);font-weight:600" : ""}" title="${rpFull(x.amountRemaining)}">${rp(x.amountRemaining)}</td>
+          <td class="r" style="${x.remaining < 0 ? "color:var(--red-text);font-weight:600" : ""}" title="${rpFull(x.amountRemaining)}">${fmt(x.remaining)}<span class="muted sub">${rp(x.amountRemaining)}</span></td>
+          <td class="r">${fmt(x.admitsActual)}${x.admitsBudgetToDate ? `<span class="muted sub">${t("budget.ofBudget", {v: fmt(x.admitsBudgetToDate)})}</span>` : ""}</td>
+          <td class="r" style="${x.prodActual != null && x.target && x.prodActual < x.target ? "color:var(--red-text);font-weight:600" : ""}">${x.prodActual != null ? fmt(x.prodActual, 1) : "–"}${x.target ? `<span class="muted sub">${t("budget.targetV", {v: fmt(x.target, 1)})}</span>` : ""}</td>
           <td>${statusTag(x.status)}</td>
           <td>${x.status !== "none" ? reasonBtn({site: x.code, cinema: x.cinema, date: r.cut, month: key, context: x.status === "over" ? "over" : x.status === "nobudget" || x.status === "early" ? "nobudget" : "other"}) : ""}</td></tr>`).join("") || `<tr><td colspan="10" class="muted">${t("budget.emptyFilter")}</td></tr>`}</tbody>
-        <tfoot><tr><td>${t("budget.totalRow", {n: list.length})}</td><td class="r">${fmt(list.reduce((a, x) => a + (x.ft || 0), 0))}</td><td></td><td class="r">${fmt(list.reduce((a, x) => a + x.budgetMonth, 0))}</td><td class="r">${fmt(list.reduce((a, x) => a + x.actual, 0))}</td><td></td><td class="r">${fmt(list.reduce((a, x) => a + x.remaining, 0))}</td><td class="r">${rp(list.reduce((a, x) => a + (x.amountRemaining || 0), 0))}</td><td></td><td></td></tr></tfoot>
+        <tfoot><tr><td>${t("budget.totalRow", {n: list.length})}</td><td class="r">${fmt(list.reduce((a, x) => a + (x.ft || 0), 0))}</td><td class="r">${fmt(list.reduce((a, x) => a + x.budgetMonth, 0))}</td><td class="r">${fmt(list.reduce((a, x) => a + x.actual, 0))}</td><td></td><td class="r">${fmt(list.reduce((a, x) => a + x.remaining, 0))}<span class="muted sub">${rp(list.reduce((a, x) => a + (x.amountRemaining || 0), 0))}</span></td><td class="r">${fmt(list.reduce((a, x) => a + (x.admitsActual || 0), 0))}</td><td class="r">${(() => { const m = list.reduce((a, x) => a + (x.mhTotal || 0), 0); return m ? fmt(list.reduce((a, x) => a + (x.admitsActual || 0), 0) / m, 1) : "–"; })()}</td><td></td><td></td></tr></tfoot>
       </table></div>
       <p class="foot">${t("budget.footNew")} ${r.source ? t("budget.source", {s: esc(r.source)}) : ""}${r.pendingTransfers ? " " + t("budget.trPending", {n: r.pendingTransfers}) : ""}</p>
       ${transferSection(r, key)}

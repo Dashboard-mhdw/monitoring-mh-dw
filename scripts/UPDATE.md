@@ -28,3 +28,10 @@ Spreadsheet ID: `1U_tpeKDUh983e6Ez13_j-JRCyXUtNjFPnDoIm7AhOWk`
 8. Commit **hanya** folder `secure/` ke branch `main` dengan pesan `data: update <tanggal WIB>`, lalu push. `raw/` dan `data.json` sudah di-.gitignore.
 
 Budget tidak ikut di ringkasan ini (budget hanya bisa dibuka dengan password di dashboard). Untuk menyertakan budget saat menjalankan manual: `MHDW_BUDGET=/path/pribadi/budget.json node scripts/report.js`.
+
+## Budget admits dari file P&L (tidak harian)
+Budget admits per site per bulan diambil dari file P&L Cinépolis (sheet `budget`, kolom `Asistentes`) dan disimpan terkunci di `secure/a/<YYYY>/`.
+Dashboard memakai angka ini sebagai budget admits; site tanpa angka P&L tetap memakai `Budget_Admits` dari spreadsheet budget DW.
+Tugas terjadwal **tidak** menyentuh folder ini. Kalau ada file P&L baru: ekstrak ke `raw/admits-budget-<YYYY>.json`
+(`{source, year, months: {"YYYY-MM": {kodeSite: admits}}}`, kodeSite = nomor depan nama site di dashboard), lalu
+`node scripts/seal-admits.mjs raw/admits-budget-<YYYY>.json` dan commit `secure/`.

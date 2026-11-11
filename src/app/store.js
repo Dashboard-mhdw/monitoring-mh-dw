@@ -103,6 +103,22 @@ function withTransfers(b, key, transfers) {
   return {...b, sites, pendingTransfers: list.length};
 }
 
+/** Replace each site's monthly admits budget with the P&L figure (spread over the budget weeks by days).
+ *  Sites without a P&L figure keep Budget_Admits from the DW budget sheet. */
+function withAdmitsPL(b, pl) {
+  if (!pl || !Object.keys(pl).length) return b;
+  const P = b.periods || [], days = P.map(p => (Date.parse(p.end) - Date.parse(p.start)) / 864e5 + 1), tot = days.reduce((a, v) => a + v, 0) || 1;
+  const sites = {};
+  Object.entries(b.sites || {}).forEach(([c, s]) => { sites[c] = Array.isArray(s) ? {mh: s} : {...s}; });
+  Object.entries(pl).forEach(([c, v]) => {
+    if (!(v > 0)) return;
+    const s = sites[c] || (sites[c] = {mh: P.map(() => 0)});
+    s.admits = days.map(d => Math.round(v * d / tot * 10) / 10);
+    s.admitsMonth = v; s.admitsSource = "pl";
+  });
+  return {...b, sites, admitsSource: "pl"};
+}
+
 /** Budget vs actual for a month up to a cut-off date, limited to the unlocked region. */
 export function budgetVsActual(key, cut, transfers) {
   const g = getMonth(key);
@@ -110,7 +126,7 @@ export function budgetVsActual(key, cut, transfers) {
   const codes = scopeCodes();
   let b = BUDGET.byMonth && BUDGET.byMonth[key];
   if (!b) return null;
-  b = withTransfers(b, key, transfers);
+  b = withAdmitsPL(withTransfers(b, key, transfers), BUDGET.admitsPL && BUDGET.admitsPL[key]);
   const m = codes ? {...g.m, rows: g.m.rows.filter(r => codes.has(r.code))} : g.m;
   const r = Core.budgetVsActual(m, b, cut);
   if (r) enrichAmounts(r, b);
@@ -124,6 +140,7 @@ function enrichAmounts(r, b) {
     const s = S[x.code] || {};
     x.rate = s.rate || 0; x.ft = s.ft || 0; x.nobar = s.nobar || 0;
     x.region = (T[x.code] && T[x.code].region) || s.region || "";
+    x.city = (T[x.code] && T[x.code].city || "").replace(/\s*\(perlu dicek\)/, "");
     x.target = (T[x.code] && T[x.code].target) || s.prod || null;
     x.amountMonth = s.amountMonth != null ? s.amountMonth : x.budgetMonth * x.rate;
     x.amountActual = x.actual * x.rate;
