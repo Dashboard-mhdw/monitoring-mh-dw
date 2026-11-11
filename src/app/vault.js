@@ -61,5 +61,8 @@ export async function loadData(entry) {
   const admitsPL = {};
   Object.values(admitsByYear).forEach(y => Object.entries((y && y.months) || {}).forEach(([k, v]) => { admitsPL[k] = v; }));
   const anyB = Object.keys(byMonth).length;
-  return {data: {generatedAt: idx.generatedAt, source: idx.source, months}, budget: anyB ? {byMonth, admitsPL} : null};
+  // Admin only: region passwords for the RM emails (secure/p/all.json, sealed to the admin key)
+  let rmAccess = null;
+  if (entry.scope === "ALL") { try { rmAccess = (await open(priv, await getJson("secure/p/all.json"))).regions || null; } catch (e) { /* not set up */ } }
+  return {data: {generatedAt: idx.generatedAt, source: idx.source, months, rmAccess}, budget: anyB ? {byMonth, admitsPL} : null};
 }

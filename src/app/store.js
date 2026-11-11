@@ -15,6 +15,8 @@ export const store = {
   get budget() { return BUDGET; },
   /** Who unlocked the budget: {scope, label}, or null while locked. */
   get access() { return ACCESS; },
+  /** Admin only: password of a region, for the RM email ("" when unknown). */
+  rmPassword(region) { return (DATA && DATA.rmAccess && DATA.rmAccess[region]) || ""; },
   /** Month keys (YYYY-MM), newest first. */
   months() { return Object.keys((DATA && DATA.months) || {}).sort().reverse(); },
   has(key) { return !!(DATA && DATA.months && DATA.months[key]); },

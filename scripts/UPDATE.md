@@ -35,3 +35,8 @@ Dashboard memakai angka ini sebagai budget admits; site tanpa angka P&L tetap me
 Tugas terjadwal **tidak** menyentuh folder ini. Kalau ada file P&L baru: ekstrak ke `raw/admits-budget-<YYYY>.json`
 (`{source, year, months: {"YYYY-MM": {kodeSite: admits}}}`, kodeSite = nomor depan nama site di dashboard), lalu
 `node scripts/seal-admits.mjs raw/admits-budget-<YYYY>.json` dan commit `secure/`.
+
+## Password region di email RM
+Email reminder ke RM (menu Budget & Sisa, login Admin) menampilkan link dashboard + password region itu.
+Password region disimpan terkunci untuk Admin saja di `secure/p/all.json`. Setiap kali password diganti
+(`scripts/seal-vault.mjs`), jalankan juga `node scripts/seal-rm-access.mjs <passwords.json>` lalu commit `secure/`.

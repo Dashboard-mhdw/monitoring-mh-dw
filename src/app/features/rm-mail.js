@@ -3,6 +3,7 @@
 // Inline styles + table-based bars so it survives copy-paste into Outlook/Gmail.
 import { esc } from "../ui/dom.js";
 import { _dicts } from "../i18n.js";
+import { store } from "../store.js";
 
 const CAL = _dicts.id._cal;
 const DASH = "https://dashboard-mhdw.github.io/monitoring-mh-dw/";
@@ -35,6 +36,13 @@ function pack(r, region) {
   const per = r.periods.map((p, i) => ({...p, budget: S(x => x.periods[i].budget), btd: S(x => x.periods[i].budgetToDate), actual: S(x => x.periods[i].actual)}));
   const list = rows.slice().sort((a, b) => (b.actual - b.budgetToDate) - (a.actual - a.budgetToDate) || b.actual - a.actual);
   return {rows: list, G, per, left: daysLeft(r.cut, r.month)};
+}
+
+/** "Berikut link dashboard … + password" line (password only when the admin data has it). */
+function access(region, html) {
+  const pw = store.rmPassword(region), R = regLabel(region);
+  if (!html) return `Berikut link dashboard Monitoring MH DW untuk detail lebih lanjut: ${DASH}` + (pw ? `\nPassword ${R}: ${pw}` : "");
+  return `<p style="margin:0 0 12px">Berikut link dashboard Monitoring MH DW untuk detail lebih lanjut:<br><a href="${DASH}" style="color:${BLU}">${DASH}</a>${pw ? `<br>Password ${esc(R)}: <b>${esc(pw)}</b>` : ""}</p>`;
 }
 
 export function subject(r, region) {
@@ -86,10 +94,10 @@ export function mailHTML(r, region) {
     return `<tr><td style="${td}">${esc(x.cinema)}${cityOf(x)}</td><td style="${td};text-align:right">${n0(x.budgetMonth)}</td><td style="${td};text-align:right">${n0(x.budgetToDate)}</td><td style="${td};text-align:right;font-weight:bold;color:${hot ? RED : INK}">${n0(x.actual)}</td><td style="${td};white-space:nowrap">${meter}</td><td style="${td};text-align:right">${n0(x.admitsActual)}</td><td style="${td};text-align:right;color:${lowP ? RED : INK}">${d1(x.prodActual)}${x.target ? `<span style="color:${MUT};font-size:11px"> / ${d1(x.target)}</span>` : ""}</td></tr>`;
   };
   return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:920px">
-<p style="margin:0 0 12px">Dear Bapak/Ibu RM ${R},</p>
+<p style="margin:0 0 12px">Dear Kakak-kakak RM ${R},</p>
 <p style="margin:0 0 16px">${paragraph(r, region, P, true)}</p>
 <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:900px;margin:0 0 6px"><tr>
-${kpi("Budget " + M, n0(G.bm) + " MH", rpS(G.rpB))}${kpi("Terpakai s.d. " + D, n0(G.ac) + " MH", pct(used) + " · jadwal " + n0(G.bt) + " MH", G.ac > G.bt ? RED : INK)}${kpi("Sisa MH", n0(G.bm - G.ac) + " MH", rpS(G.rpB - G.rpA) + " · " + left + " hari lagi", G.bm - G.ac < 0 ? RED : GRN)}${kpi("Actual admits MTD", n0(G.adm), G.admB ? `budget s.d. ${D}: ${n0(G.admBt)} (${G.admBt ? (G.adm >= G.admBt ? "+" : "") + pct(G.adm / G.admBt - 1) : "–"})` : "budget admits –", G.admBt && G.adm < G.admBt ? RED : INK)}${kpi("Prod MTD", d1(G.prod), `admits ÷ total MH${G.target ? " · target " + d1(G.target) : ""}`, G.prod != null && G.target && G.prod < G.target ? RED : G.prod != null && G.target ? GRN : INK)}
+${kpi("Budget " + M, n0(G.bm) + " MH", rpS(G.rpB))}${kpi("Terpakai s.d. " + D, n0(G.ac) + " MH", pct(used) + " · jadwal " + n0(G.bt) + " MH", G.ac > G.bt ? RED : INK)}${kpi("Sisa MH", n0(G.bm - G.ac) + " MH", rpS(G.rpB - G.rpA) + " · " + left + " hari lagi", G.bm - G.ac < 0 ? RED : GRN)}${kpi("Actual admits MTD", n0(G.adm), G.admB ? `vs budget s.d. ${D}: ${n0(G.admBt)} (${G.admBt ? (G.adm >= G.admBt ? "+" : "") + pct(G.adm / G.admBt - 1) : "–"})<br>budget 1 bulan: ${n0(G.admB)}` : "budget admits –", G.admBt && G.adm < G.admBt ? RED : INK)}${kpi("Prod MTD", d1(G.prod), `admits ÷ total MH${G.target ? " · target " + d1(G.target) : ""}`, G.prod != null && G.target && G.prod < G.target ? RED : G.prod != null && G.target ? GRN : INK)}
 </tr></table>
 <p style="margin:18px 0 6px;font-size:15px;font-weight:bold">Budget vs actual per minggu · ${R}</p>
 <p style="margin:0 0 6px;font-size:12px;color:${MUT}">${dot(GRY)} Budget &nbsp; ${dot(BLU)} Actual &nbsp; ${dot(ORG)} Actual &gt; budget s.d. tgl</p>
@@ -100,17 +108,19 @@ ${kpi("Budget " + M, n0(G.bm) + " MH", rpS(G.rpB))}${kpi("Terpakai s.d. " + D, n
 ${rows.map(site).join("")}
 <tr><td style="${tf}">Total ${rows.length} site</td><td style="${tf};text-align:right">${n0(G.bm)}</td><td style="${tf};text-align:right">${n0(G.bt)}</td><td style="${tf};text-align:right">${n0(G.ac)}</td><td style="${tf}">${pct(used)}</td><td style="${tf};text-align:right">${n0(G.adm)}</td><td style="${tf};text-align:right">${d1(G.prod)}</td></tr>
 </table>
-<p style="font-size:11px;color:${MUT};margin:6px 0 14px">Merah = terpakai melewati jadwal s.d. ${D} · oranye = ≥ 90% budget bulan · hijau = aman. Prod = total admits ÷ total MH (PKWT + PKDW), merah = di bawah target. Detail &amp; alasan: <a href="${DASH}" style="color:${BLU}">dashboard Monitoring MH DW</a>.</p>
-<p style="margin:0 0 12px">Mohon dibantu dicek dan dikontrol pemakaian DW di site masing-masing. Terima kasih.</p>
+<p style="font-size:11px;color:${MUT};margin:6px 0 14px">Merah = terpakai melewati jadwal s.d. ${D} · oranye = ≥ 90% budget bulan · hijau = aman. Prod = total admits ÷ total MH (PKWT + PKDW), merah = di bawah target.</p>
+<p style="margin:0 0 12px">Mohon dibantu dicek dan dikontrol pemakaian DW di site masing-masing.</p>
+${access(region, true)}
+<p style="margin:0 0 12px">Terima kasih.</p>
 <p style="margin:0">Best regards,<br>Ivan</p></div>`;
 }
 
 export function mailText(r, region) {
   const P = pack(r, region), {G, per, rows} = P, R = regLabel(region);
-  return [`Dear Bapak/Ibu RM ${R},`, "", paragraph(r, region, P, false), "",
+  return [`Dear Kakak-kakak RM ${R},`, "", paragraph(r, region, P, false), "",
     `Budget ${monthId(r.month)}: ${n0(G.bm)} MH | Terpakai: ${n0(G.ac)} MH (${pct(G.bm ? G.ac / G.bm : 0)}) | Sisa: ${n0(G.bm - G.ac)} MH`,
     `Actual admits MTD: ${n0(G.adm)}${G.admB ? ` (budget s.d. tgl ${n0(G.admBt)})` : ""} | Prod MTD: ${d1(G.prod)}${G.target ? ` (target ${d1(G.target)})` : ""}`, "",
     "Per minggu (budget / actual):", ...per.map(p => `W${p.week} ${+p.start.slice(8)}–${dS(p.end)}: ${n0(p.budget)} / ${p.elapsed ? n0(p.actual) : "belum berjalan"}`), "",
     "Per site (budget bulan / jadwal s.d. tgl / terpakai · admits MTD · prod):", ...rows.map(x => `${x.cinema}: ${n0(x.budgetMonth)} / ${n0(x.budgetToDate)} / ${n0(x.actual)}${x.budgetMonth ? ` (${pct(x.actual / x.budgetMonth)})` : " (tanpa budget)"} · ${n0(x.admitsActual)} · ${d1(x.prodActual)}`), "",
-    `Detail: ${DASH}`, "", "Mohon dibantu dicek dan dikontrol pemakaian DW di site masing-masing. Terima kasih.", "", "Best regards,", "Ivan"].join("\n");
+    "Mohon dibantu dicek dan dikontrol pemakaian DW di site masing-masing.", "", access(region, false), "", "Terima kasih.", "", "Best regards,", "Ivan"].join("\n");
 }
