@@ -450,7 +450,7 @@ export default {
   "daily.foot": "MTD: MH & Admits dijumlah; Productivity = total Admits ÷ total MH; % DW = PKDW ÷ Total MH. Angka <b style=\"color:var(--red-text)\">merah</b> = productivity di bawah target − 1 pada hari yang memakai DW (aturan Productivity Alert). Sel bergaris = site belum isi hari itu; · = 0.",
   "daily.xTitle": "MH DW harian per site · {month}",
   "budget.mailTitle": "Email FYI ke Kak Cinthia", "budget.copyMail": "Salin email", "budget.copySubject": "Salin subjek",
-  "budget.mailNote": "Isi email & tabel per region ikut tanggal \"s.d.\" di atas dan ter-update otomatis tiap data diperbarui. Klik Salin email lalu tempel di Outlook/Gmail (tabel ikut tersalin).",
+  "budget.mailNote": "Isi email (amount nasional, trend weekly, per region, site over budget) ikut tanggal \"s.d.\" di atas dan ter-update otomatis tiap data diperbarui. Klik Salin email lalu tempel di Outlook/Gmail (tabel ikut tersalin).",
   "budget.rmTitle": "Email reminder mingguan ke RM", "budget.rmNote": "Satu email per region, hanya angka region itu (tanpa angka nasional/region lain). Pilih region, klik Salin email lalu tempel di Outlook/Gmail — chart & tabel ikut tersalin. Isi ikut tanggal \"s.d.\" di atas (Rabu: default s.d. Selasa).",
   "budget.mailCopied": "Email disalin, tinggal tempel", "budget.subjectCopied": "Subjek disalin",
   "alert.from": "Dari", "alert.to": "s.d.", "alert.range": "Rentang tanggal", "alert.pWeekend": "Jum–Min", "alert.p7": "7 hari",
