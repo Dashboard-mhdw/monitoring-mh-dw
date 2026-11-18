@@ -15,6 +15,8 @@ const cityOf = x => x.city ? ` <span style="color:${"#6e6e73"};font-size:11px">�
 const dS = iso => `${+iso.slice(8)} ${CAL.monthsShort[+iso.slice(5, 7) - 1]}`;
 const monthId = key => CAL.months[+key.slice(5, 7) - 1];
 const regLabel = s => String(s || "").replace(/^REGION/i, "Region");
+const RM = {1: "Kak Viana", 2: "Bang Faisal", 3: "Bang Cesaro", 4: "Bang Meidiyan", 5: "Bang Edwink", 6: "Bang Baldi"};
+const greet = region => { const n = +(String(region).match(/\d+/) || [])[0]; return `Dear ${RM[n] || "Kakak-kakak RM " + regLabel(region)},`; };
 const daysLeft = (cut, key) => { const [y, m] = key.split("-").map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate() - +cut.slice(8); };
 
 const INK = "#1d1d1f", MUT = "#6e6e73", LINE = "#d2d2d7", GRY = "#c7c7cc", BLU = "#0a84ff", ORG = "#ff9f0a", RED = "#d70015", GRN = "#248a3d";
@@ -50,19 +52,14 @@ export function subject(r, region) {
 }
 
 function paragraph(r, region, P, html) {
-  const {G, rows, left} = P, M = monthId(r.month), D = dS(r.cut), R = regLabel(region);
-  const used = G.bm ? G.ac / G.bm : 0, vs = G.bt ? G.ac / G.bt - 1 : 0;
+  const {G, left} = P, M = monthId(r.month), D = dS(r.cut), R = regLabel(region);
+  const vs = G.bt ? G.ac / G.bt - 1 : 0;
   const b = (s, col) => html ? `<b style="color:${col}">${s}</b>` : s;
-  let s = `Berikut update pemakaian MH DW ${R} bulan ${M} s.d. ${D}. `;
-  s += G.ac > G.bm
-    ? `Budget bulan ini ${n0(G.bm)} MH dan sudah terpakai ${n0(G.ac)} MH, artinya ${b(`over ${n0(G.ac - G.bm)} MH`, RED)}${left > 0 ? ` dengan sisa ${left} hari lagi` : ""}.`
-    : `Dari budget ${n0(G.bm)} MH, sudah terpakai ${n0(G.ac)} MH (${pct(used)}) dengan sisa ${n0(G.bm - G.ac)} MH${left > 0 ? ` untuk ${left} hari lagi` : ""}.`;
-  if (G.bt > 0) s += vs > 0.05 ? ` Pemakaian ini ${b(`${pct(vs)} di atas budget MTD`, RED)} (budget MTD s.d. ${D}: ${n0(G.bt)} MH), jadi mohon dibantu kontrol pemakaian DW minggu ini.`
-    : vs < -0.05 ? ` Pemakaian masih ${b("di bawah budget MTD", GRN)} (budget MTD s.d. ${D}: ${n0(G.bt)} MH).` : ` Pemakaian sesuai budget MTD (${n0(G.bt)} MH s.d. ${D}).`;
-  const over = rows.filter(x => x.budgetToDate > 0 && x.actual > x.budgetToDate).length;
-  const nob = rows.filter(x => x.budgetMonth === 0 && x.actual > 0).length;
-  const bits = [over && `${over} site sudah melewati budget MTD`, nob && `${nob} site memakai DW tanpa budget`].filter(Boolean);
-  if (bits.length) s += ` Ada ${bits.join(" dan ")} (lihat tabel di bawah).`;
+  const sisa = left > 0 ? ` untuk ${left} hari lagi` : "";
+  let s = `Berikut update MH DW ${R} bulan ${M} s.d. ${D}: terpakai ${n0(G.ac)} dari ${n0(G.bm)} MH (${pct(G.bm ? G.ac / G.bm : 0)}). `;
+  if (G.ac > G.bm) s += `Sudah ${b(`over ${n0(G.ac - G.bm)} MH`, RED)} dari budget bulan ini, mohon dibantu kontrol pemakaian DW.`;
+  else if (G.bt > 0 && vs > 0.05) s += `Sisa ${n0(G.bm - G.ac)} MH${sisa}, tapi sudah ${b(`${pct(vs)} di atas budget MTD`, RED)}, mohon dibantu kontrol pemakaian DW minggu ini.`;
+  else s += `Sisa ${n0(G.bm - G.ac)} MH${sisa}, ${G.bt > 0 && vs < -0.05 ? b("masih di bawah budget MTD", GRN) : "sesuai budget MTD"}.`;
   return s;
 }
 
@@ -94,7 +91,7 @@ export function mailHTML(r, region) {
     return `<tr><td style="${td}">${esc(x.cinema)}${cityOf(x)}</td><td style="${td};text-align:right">${n0(x.budgetMonth)}</td><td style="${td};text-align:right">${n0(x.budgetToDate)}</td><td style="${td};text-align:right;font-weight:bold;color:${hot ? RED : INK}">${n0(x.actual)}</td><td style="${td};white-space:nowrap">${meter}</td><td style="${td};text-align:right">${n0(x.admitsActual)}</td><td style="${td};text-align:right;color:${lowP ? RED : INK}">${d1(x.prodActual)}${x.target ? `<span style="color:${MUT};font-size:11px"> / ${d1(x.target)}</span>` : ""}</td></tr>`;
   };
   return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:920px">
-<p style="margin:0 0 12px">Dear Kakak-kakak RM ${R},</p>
+<p style="margin:0 0 12px">${esc(greet(region))}</p>
 <p style="margin:0 0 16px">${paragraph(r, region, P, true)}</p>
 <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:900px;margin:0 0 6px"><tr>
 ${kpi("Budget " + M, n0(G.bm) + " MH", rpS(G.rpB))}${kpi("Terpakai s.d. " + D, n0(G.ac) + " MH", pct(used) + " · budget MTD " + n0(G.bt) + " MH", G.ac > G.bt ? RED : INK)}${kpi("Sisa MH", n0(G.bm - G.ac) + " MH", rpS(G.rpB - G.rpA) + " · " + left + " hari lagi", G.bm - G.ac < 0 ? RED : GRN)}${kpi("Actual admits MTD", n0(G.adm), G.admB ? `vs budget s.d. ${D}: ${n0(G.admBt)} (${G.admBt ? (G.adm >= G.admBt ? "+" : "") + pct(G.adm / G.admBt - 1) : "–"})<br>budget 1 bulan: ${n0(G.admB)}` : "budget admits –", G.admBt && G.adm < G.admBt ? RED : INK)}${kpi("Prod MTD", d1(G.prod), `admits ÷ total MH${G.target ? " · target " + d1(G.target) : ""}`, G.prod != null && G.target && G.prod < G.target ? RED : G.prod != null && G.target ? GRN : INK)}
@@ -117,7 +114,7 @@ ${access(region, true)}
 
 export function mailText(r, region) {
   const P = pack(r, region), {G, per, rows} = P, R = regLabel(region);
-  return [`Dear Kakak-kakak RM ${R},`, "", paragraph(r, region, P, false), "",
+  return [greet(region), "", paragraph(r, region, P, false), "",
     `Budget ${monthId(r.month)}: ${n0(G.bm)} MH | Terpakai: ${n0(G.ac)} MH (${pct(G.bm ? G.ac / G.bm : 0)}) | Sisa: ${n0(G.bm - G.ac)} MH`,
     `Actual admits MTD: ${n0(G.adm)}${G.admB ? ` (budget s.d. tgl ${n0(G.admBt)})` : ""} | Prod MTD: ${d1(G.prod)}${G.target ? ` (target ${d1(G.target)})` : ""}`, "",
     "Per minggu (budget / actual):", ...per.map(p => `W${p.week} ${+p.start.slice(8)}–${dS(p.end)}: ${n0(p.budget)} / ${p.elapsed ? n0(p.actual) : "belum berjalan"}`), "",
