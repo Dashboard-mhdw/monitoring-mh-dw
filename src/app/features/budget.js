@@ -10,6 +10,27 @@ import { groupedChart } from "../ui/charts.js";
 import { openSheet } from "../ui/sheet.js";
 import { budgetVsActual, store } from "../store.js";
 import { state } from "../state.js";
+
+// "Download JPG" of an email body: render it off-screen at email width on white, snapshot with html2canvas (lazy-loaded).
+const H2C = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+let h2cP = null;
+const loadH2C = () => window.html2canvas ? Promise.resolve(window.html2canvas) : (h2cP ||= new Promise((ok, no) => {
+  const s = document.createElement("script"); s.src = H2C; s.onload = () => ok(window.html2canvas); s.onerror = () => { h2cP = null; no(new Error("html2canvas")); }; document.head.appendChild(s);
+}));
+async function downloadJpg(html, name) {
+  hud(t("budget.jpgWorking"));
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;left:-10000px;top:0;width:940px;padding:28px;background:#fff;color:#1d1d1f;color-scheme:light";
+  box.innerHTML = html; document.body.appendChild(box);
+  try {
+    const h2c = await loadH2C();
+    const cv = await h2c(box, {backgroundColor: "#ffffff", scale: 2, logging: false});
+    const blob = await new Promise(ok => cv.toBlob(ok, "image/jpeg", 0.92));
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name.replace(/[^\w\-. ]+/g, "").replace(/\s+/g, "_") + ".jpg";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    hud(t("budget.jpgDone"));
+  } catch (e) { hud(t("budget.jpgFail")); } finally { box.remove(); }
+}
 import { reasonBtn, reasonSection } from "./reasons.js";
 
 const TONE = {over: "red", nobudget: "orange", early: "orange", near: "orange", ok: "green", none: ""};
@@ -216,11 +237,11 @@ export default {
       <p class="foot">${t("budget.footNew")} ${r.source ? t("budget.source", {s: esc(r.source)}) : ""}${r.pendingTransfers ? " " + t("budget.trPending", {n: r.pendingTransfers}) : ""}</p>
       ${transferSection(r, key)}
       ${!admin ? "" : `<div class="row" style="margin-top:var(--s4)"><h2 class="section-head" style="margin:0">${t("budget.mailTitle")}</h2><span class="spacer"></span>
-        ${btn(t("budget.copySubject"), {id: "bmSubj", icon: ICON.copy})}${btn(t("budget.copyMail"), {id: "bmCopy", filled: true, icon: ICON.copy})}</div>
+        ${btn(t("budget.copySubject"), {id: "bmSubj", icon: ICON.copy})}${btn(t("budget.downloadJpg"), {id: "bmJpg", icon: ICON.down})}${btn(t("budget.copyMail"), {id: "bmCopy", filled: true, icon: ICON.copy})}</div>
       <p class="foot" style="margin-top:-8px">${t("budget.mailNote")}</p>
       <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(Mail.subject(r))}</p>${Mail.mailHTML(r)}</div>
       ${rmRegs.length ? `<div class="row" style="margin-top:var(--s6)"><h2 class="section-head" style="margin:0">${t("budget.rmTitle")}</h2><span class="spacer"></span>
-        ${btn(t("budget.copySubject"), {id: "rmSubj", icon: ICON.copy})}${btn(t("budget.copyMail"), {id: "rmCopy", filled: true, icon: ICON.copy})}</div>
+        ${btn(t("budget.copySubject"), {id: "rmSubj", icon: ICON.copy})}${btn(t("budget.downloadJpg"), {id: "rmJpg", icon: ICON.down})}${btn(t("budget.copyMail"), {id: "rmCopy", filled: true, icon: ICON.copy})}</div>
       <p class="foot" style="margin-top:-8px">${t("budget.rmNote")}</p>
       <div class="row" style="margin-bottom:var(--s3)">${segmented("rmr", rmReg, rmRegs.map(x => [x, x.replace(/^REGION/, "Region")]), t("budget.rmTitle"))}</div>
       <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 4px"><b>To:</b> RM ${esc(rmReg.replace(/^REGION/, "Region"))}</p><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(RM.subject(r, rmReg))}</p>${RM.mailHTML(r, rmReg)}</div>` : ""}`}`;
@@ -234,6 +255,8 @@ export default {
     on(c, "#bmSubj", "click", () => copyText(Mail.subject(r), t("budget.subjectCopied")));
     on(c, "[data-rmr]", "click", b => { state.rmMailRegion = b.dataset.rmr; app.rerender(); });
     on(c, "#rmCopy", "click", () => copyRich(RM.mailHTML(r, rmReg), RM.mailText(r, rmReg), t("budget.mailCopied")));
+    on(c, "#bmJpg", "click", () => downloadJpg(Mail.mailHTML(r), Mail.subject(r)));
+    on(c, "#rmJpg", "click", () => downloadJpg(RM.mailHTML(r, rmReg), RM.subject(r, rmReg)));
     on(c, "#rmSubj", "click", () => copyText(RM.subject(r, rmReg), t("budget.subjectCopied")));
   },
 };
