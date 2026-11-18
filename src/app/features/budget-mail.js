@@ -104,7 +104,7 @@ export function mailHTML(r) {
   return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:900px">
 <p style="margin:0 0 12px">Dear Kak Cinthia,</p>
 <p style="margin:0 0 16px">${paragraph(r, P, true)}</p>
-${h2(`1. Amount nasional · ${M} s.d. ${D}`)}
+<!--jpg-->${h2(`1. Amount nasional · ${M} s.d. ${D}`)}
 <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:880px;margin:0 0 6px"><tr>
 ${kpi("Budget DW " + M, rpS(N.bm), n0(N.mhB) + " MH")}${kpi("Terpakai s.d. " + D, rpS(N.ac), `${pct(N.bm ? N.ac / N.bm : 0)} · budget MTD ${rpS(N.bt)}`, N.ac > N.bt * 1.0001 ? RED : INK)}${kpi("Sisa budget", rpS(N.left), `${n0(N.mhB - N.mhA)} MH · ${left} hari lagi`, N.left < 0 ? RED : GRN)}${kpi("Perkiraan akhir bulan", rpS(N.proj), N.proj > N.bm ? `over ${rpS(N.proj - N.bm)}` : `di bawah budget ${rpS(N.bm - N.proj)}`, N.proj > N.bm ? RED : GRN)}
 </tr></table>
@@ -125,7 +125,7 @@ ${ov}
 <tr><td style="${tf}" colspan="4">Total ${over.length} site</td><td style="${tf + R};color:${RED}">+${n0(ovTot.mh)}</td><td style="${tf + R};color:${RED}">${rpS(ovTot.rp)}</td></tr>
 </table>` : `<p style="margin:0;color:${GRN}">Tidak ada site yang over budget MTD s.d. ${D}.</p>`}
 <p style="font-size:11px;color:${MUT};margin:6px 0 14px">Amount = MH DW × rate MH DW tiap site. Budget MTD = budget per minggu dihitung sampai ${D}. Over = terpakai − budget MTD; site tanpa budget dihitung over sebesar seluruh pemakaiannya. Detail: <a href="${DASH}" style="color:${BLU}">dashboard Monitoring MH DW</a>.</p>
-<p style="margin:0 0 12px">Terima kasih.</p>
+<!--/jpg--><p style="margin:0 0 12px">Terima kasih.</p>
 <p style="margin:0">Best regards,<br>Ivan</p></div>`;
 }
 

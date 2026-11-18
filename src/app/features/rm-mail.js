@@ -93,7 +93,7 @@ export function mailHTML(r, region) {
   return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:920px">
 <p style="margin:0 0 12px">${esc(greet(region))}</p>
 <p style="margin:0 0 16px">${paragraph(r, region, P, true)}</p>
-<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:900px;margin:0 0 6px"><tr>
+<!--jpg--><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:900px;margin:0 0 6px"><tr>
 ${kpi("Budget " + M, n0(G.bm) + " MH", rpS(G.rpB))}${kpi("Terpakai s.d. " + D, n0(G.ac) + " MH", pct(used) + " · budget MTD " + n0(G.bt) + " MH", G.ac > G.bt ? RED : INK)}${kpi("Sisa MH", n0(G.bm - G.ac) + " MH", rpS(G.rpB - G.rpA) + " · " + left + " hari lagi", G.bm - G.ac < 0 ? RED : GRN)}${kpi("Actual admits MTD", n0(G.adm), G.admB ? `vs budget s.d. ${D}: ${n0(G.admBt)} (${G.admBt ? (G.adm >= G.admBt ? "+" : "") + pct(G.adm / G.admBt - 1) : "–"})<br>budget 1 bulan: ${n0(G.admB)}` : "budget admits –", G.admBt && G.adm < G.admBt ? RED : INK)}${kpi("Prod MTD", d1(G.prod), `admits ÷ total MH${G.target ? " · target " + d1(G.target) : ""}`, G.prod != null && G.target && G.prod < G.target ? RED : G.prod != null && G.target ? GRN : INK)}
 </tr></table>
 <p style="margin:18px 0 6px;font-size:15px;font-weight:bold">Budget vs actual per minggu · ${R}</p>
@@ -106,7 +106,7 @@ ${rows.map(site).join("")}
 <tr><td style="${tf}">Total ${rows.length} site</td><td style="${tf};text-align:right">${n0(G.bm)}</td><td style="${tf};text-align:right">${n0(G.bt)}</td><td style="${tf};text-align:right">${n0(G.ac)}</td><td style="${tf}">${pct(used)}</td><td style="${tf};text-align:right">${n0(G.adm)}</td><td style="${tf};text-align:right">${d1(G.prod)}</td></tr>
 </table>
 <p style="font-size:11px;color:${MUT};margin:6px 0 14px">Merah = terpakai melewati budget MTD s.d. ${D} · oranye = ≥ 90% budget bulan · hijau = aman. Prod = total admits ÷ total MH (PKWT + PKDW), merah = di bawah target.</p>
-<p style="margin:0 0 12px">Mohon dibantu dicek dan dikontrol pemakaian DW di site masing-masing.</p>
+<!--/jpg--><p style="margin:0 0 12px">Mohon dibantu dicek dan dikontrol pemakaian DW di site masing-masing.</p>
 ${access(region, true)}
 <p style="margin:0 0 12px">Terima kasih.</p>
 <p style="margin:0">Best regards,<br>Ivan</p></div>`;

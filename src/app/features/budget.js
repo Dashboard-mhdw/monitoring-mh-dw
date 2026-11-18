@@ -11,7 +11,7 @@ import { openSheet } from "../ui/sheet.js";
 import { budgetVsActual, store } from "../store.js";
 import { state } from "../state.js";
 
-// "Download JPG" of an email body: render it off-screen at email width on white, snapshot with html2canvas (lazy-loaded).
+// "Download JPG" of an email's data block: render it off-screen at email width on white, snapshot with html2canvas (lazy-loaded).
 const H2C = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
 let h2cP = null;
 const loadH2C = () => window.html2canvas ? Promise.resolve(window.html2canvas) : (h2cP ||= new Promise((ok, no) => {
@@ -21,7 +21,10 @@ async function downloadJpg(html, name) {
   hud(t("budget.jpgWorking"));
   const box = document.createElement("div");
   box.style.cssText = "position:fixed;left:-10000px;top:0;width:940px;padding:28px;background:#fff;color:#1d1d1f;color-scheme:light";
-  box.innerHTML = html; document.body.appendChild(box);
+  // Only the data block (between <!--jpg--> markers): no greeting, closing, link or region password.
+  const m = html.match(/^(<div[^>]*>)[\s\S]*?<!--jpg-->([\s\S]*?)<!--\/jpg-->/);
+  const title = `<p style="margin:0 0 14px;font-size:17px;font-weight:bold">${esc(name)}</p>`;
+  box.innerHTML = m ? m[1] + title + m[2] + "</div>" : html; document.body.appendChild(box);
   try {
     const h2c = await loadH2C();
     const cv = await h2c(box, {backgroundColor: "#ffffff", scale: 2, logging: false});
