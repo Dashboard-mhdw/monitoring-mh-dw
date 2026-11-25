@@ -139,7 +139,9 @@ export function budgetVsActual(key, cut, transfers) {
  *  from daily admit spikes (Core.bulkDays). Two groups:
  *    non  = sites without nobar budget: all nobar admits and the DW MH used on those days
  *    over = sites whose nobar budget ran out: admits and DW MH used after the budget was used up
- *           (the day it runs out counts pro rata). */
+ *           (the day it runs out counts pro rata).
+ *  `use` = the days that count (date, nobar admits, DW MH); x.dw is what the Kak Cinthia email leaves out of actual
+ *  in its "excl. nobar" version. The dashboard itself always shows the plain actual. */
 function nobarUsage(key, cut, b, codes) {
   if (!cut) return null;
   const S = b.sites || {}, T = (TARGETS && TARGETS.sites) || {};
@@ -153,11 +155,12 @@ function nobarUsage(key, cut, b, codes) {
   by.forEach(x => {
     x.days.sort((p, q) => p.iso.localeCompare(q.iso));
     x.n = x.days.length; x.used = x.days.reduce((a, d) => a + d.nobar, 0); x.dwAll = x.days.reduce((a, d) => a + d.dw, 0);
-    if (!x.budget) { x.after = x.used; x.dw = x.dwAll; non.push(x); return; }
+    if (!x.budget) { x.after = x.used; x.dw = x.dwAll; x.use = x.days.map(d => ({iso: d.iso, admits: d.nobar, dw: d.dw})); non.push(x); return; }
     if (x.used <= x.budget) return;
-    let cum = 0, dw = 0, from = null;
-    x.days.forEach(d => { const before = cum; cum += d.nobar; if (cum > x.budget) { const share = before >= x.budget ? 1 : (cum - x.budget) / d.nobar; dw += d.dw * share; if (!from) from = d.iso; } });
-    x.after = x.used - x.budget; x.dw = dw; x.from = from; over.push(x);
+    let cum = 0; x.use = [];
+    x.days.forEach(d => { const before = cum; cum += d.nobar;
+      if (cum > x.budget) { const share = before >= x.budget ? 1 : (cum - x.budget) / d.nobar; x.use.push({iso: d.iso, admits: d.nobar * share, dw: d.dw * share}); } });
+    x.after = x.used - x.budget; x.dw = x.use.reduce((a, d) => a + d.dw, 0); x.from = x.use[0].iso; over.push(x);
   });
   const fin = list => { list.forEach(x => x.amount = x.dw * x.rate); list.sort((p, q) => q.after - p.after);
     const sum = k => list.reduce((a, x) => a + (x[k] || 0), 0);
