@@ -432,7 +432,7 @@ export default {
   "search.chipH1": "H-1 missing", "search.chipAlert": "Flagged",
   "search.monthSub": "Open in {v}", "search.dateH1": "Check H-1 entries for this date", "search.dateAlert": "Productivity Alert for this date",
   "search.dl.month": "PKDW per Site Excel", "search.dl.csv": "PKDW per Site CSV", "search.dl.alert": "Productivity Alert Excel",
-  "search.dl.budget": "Budget vs Actual Excel", "search.dl.trend": "Monthly Trend Excel", "search.dl.reasons": "Notes & Reasons Excel",
+  "search.dl.budget": "Budget vs Actual Excel", "search.dl.mail": "Kak Cinthia email attachment Excel (per site & bulk booking)", "search.dl.trend": "Monthly Trend Excel", "search.dl.reasons": "Notes & Reasons Excel",
   // Daily per site
   "nav.daily": "Daily per Site", "search.dl.daily": "Daily per Site Excel",
   "daily.sub": "{month} · per day up to {date}", "daily.show": "Show", "daily.showSub": "Tap to switch metrics on / off",
@@ -449,7 +449,7 @@ export default {
   "daily.noDays": "No past dates in this month yet.", "daily.empty": "No sites match the filter.",
   "daily.foot": "MTD: MH & Admits are summed; Productivity = total Admits ÷ total MH; % DW = PKDW ÷ Total MH. <b style=\"color:var(--red-text)\">Red</b> = productivity below target − 1 on a day with DW (Productivity Alert rule). Striped cell = site did not fill in that day; · = 0.",
   "daily.xTitle": "Daily DW MH per site · {month}",
-  "budget.downloadJpg": "Download JPG", "budget.jpgWorking": "Preparing JPG…", "budget.jpgDone": "JPG downloaded", "budget.jpgFail": "Could not create JPG, try again", "budget.mailTitle": "FYI email to Kak Cinthia", "budget.mailXlsx": "Excel attachment", "budget.copyMail": "Copy email", "budget.copySubject": "Copy subject",
+  "budget.downloadJpg": "Download JPG", "budget.jpgWorking": "Preparing JPG…", "budget.jpgDone": "JPG downloaded", "budget.jpgFail": "Could not create JPG, try again", "budget.mailTitle": "FYI email to Kak Cinthia", "budget.mailXlsx": "Download attachment Excel", "budget.copyMail": "Copy email", "budget.copySubject": "Copy subject",
   "budget.mailNote": "The email and region table follow the \"up to\" date above and refresh with every data update. The email itself is in Bahasa Indonesia. Click Copy email and paste into Outlook/Gmail (the table is included).",
   "budget.rmTitle": "Weekly reminder email to RMs", "budget.rmNote": "One email per region with only that region's numbers (no national/other-region figures). Pick a region, click Copy email and paste into Outlook/Gmail — chart & table included. Follows the \"up to\" date above (on Wednesday: defaults to Tuesday).",
   "budget.mailCopied": "Email copied, ready to paste", "budget.subjectCopied": "Subject copied",

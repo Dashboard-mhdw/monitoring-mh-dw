@@ -32,6 +32,7 @@ const DOWNLOADS = [
   ["csv", "search.dl.csv", "csv pkdw"],
   ["alert-xlsx", "search.dl.alert", "excel productivity alert dailyworker"],
   ["budget-xlsx", "search.dl.budget", "excel budget actual"],
+  ["budget-mail-xlsx", "search.dl.mail", "excel lampiran email kak cinthia bulk booking nobar"],
   ["trend-xlsx", "search.dl.trend", "excel tren trend"],
   ["daily-xlsx", "search.dl.daily", "excel harian daily admits productivity"],
   ["reasons-xlsx", "search.dl.reasons", "excel reason catatan"],

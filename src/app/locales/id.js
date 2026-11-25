@@ -432,7 +432,7 @@ export default {
   "search.chipH1": "Belum isi H-1", "search.chipAlert": "Ter-flag",
   "search.monthSub": "Buka di {v}", "search.dateH1": "Cek pengisian H-1 tanggal ini", "search.dateAlert": "Productivity Alert tanggal ini",
   "search.dl.month": "Excel PKDW per Site", "search.dl.csv": "CSV PKDW per Site", "search.dl.alert": "Excel Productivity Alert",
-  "search.dl.budget": "Excel Budget vs Actual", "search.dl.trend": "Excel Tren Bulanan", "search.dl.reasons": "Excel Catatan & Reason",
+  "search.dl.budget": "Excel Budget vs Actual", "search.dl.mail": "Excel lampiran email Kak Cinthia (per site & bulk booking)", "search.dl.trend": "Excel Tren Bulanan", "search.dl.reasons": "Excel Catatan & Reason",
   // Harian per Site
   "nav.daily": "Harian per Site", "search.dl.daily": "Excel Harian per Site",
   "daily.sub": "{month} · per hari s.d. {date}", "daily.show": "Tampilkan", "daily.showSub": "Ketuk untuk menyalakan / mematikan metrik",
@@ -449,7 +449,7 @@ export default {
   "daily.noDays": "Belum ada tanggal yang lewat di bulan ini.", "daily.empty": "Tidak ada site yang cocok dengan filter.",
   "daily.foot": "MTD: MH & Admits dijumlah; Productivity = total Admits ÷ total MH; % DW = PKDW ÷ Total MH. Angka <b style=\"color:var(--red-text)\">merah</b> = productivity di bawah target − 1 pada hari yang memakai DW (aturan Productivity Alert). Sel bergaris = site belum isi hari itu; · = 0.",
   "daily.xTitle": "MH DW harian per site · {month}",
-  "budget.downloadJpg": "Download JPG", "budget.jpgWorking": "Menyiapkan JPG…", "budget.jpgDone": "JPG terunduh", "budget.jpgFail": "Gagal membuat JPG, coba lagi", "budget.mailTitle": "Email FYI ke Kak Cinthia", "budget.mailXlsx": "Excel lampiran", "budget.copyMail": "Salin email", "budget.copySubject": "Salin subjek",
+  "budget.downloadJpg": "Download JPG", "budget.jpgWorking": "Menyiapkan JPG…", "budget.jpgDone": "JPG terunduh", "budget.jpgFail": "Gagal membuat JPG, coba lagi", "budget.mailTitle": "Email FYI ke Kak Cinthia", "budget.mailXlsx": "Unduh Excel lampiran", "budget.copyMail": "Salin email", "budget.copySubject": "Salin subjek",
   "budget.mailNote": "Isi email (3 tabel: per region, site melewati budget 1 bulan, bulk booking Region 1 & 5 di luar budget DW; rincian per site di Excel lampiran. Dashboard tetap actual) ikut tanggal \"s.d.\" di atas dan ter-update otomatis tiap data diperbarui. Klik Salin email lalu tempel di Outlook/Gmail (tabel ikut tersalin).",
   "budget.rmTitle": "Email reminder mingguan ke RM", "budget.rmNote": "Satu email per region, hanya angka region itu (tanpa angka nasional/region lain). Pilih region, klik Salin email lalu tempel di Outlook/Gmail — chart & tabel ikut tersalin. Isi ikut tanggal \"s.d.\" di atas (Rabu: default s.d. Selasa).",
   "budget.mailCopied": "Email disalin, tinggal tempel", "budget.subjectCopied": "Subjek disalin",
