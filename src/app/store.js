@@ -131,30 +131,38 @@ export function budgetVsActual(key, cut, transfers) {
   b = withAdmitsPL(withTransfers(b, key, transfers), BUDGET.admitsPL && BUDGET.admitsPL[key]);
   const m = codes ? {...g.m, rows: g.m.rows.filter(r => codes.has(r.code))} : g.m;
   const r = Core.budgetVsActual(m, b, cut);
-  if (r) { enrichAmounts(r, b); r.nobar = nobarNonBudget(key, r.cut, b, codes); }
+  if (r) { enrichAmounts(r, b); r.nobar = nobarUsage(key, r.cut, b, codes); }
   return r;
 }
 
-/** Bulk booking / nobar at sites WITHOUT a nobar forecast in the budget ("Forecast Nobar" = 0), up to the cut-off.
- *  Estimated from daily admits (Core.bulkDays); a CM reason with category "nobar" on that date marks it confirmed later in the view. */
-function nobarNonBudget(key, cut, b, codes) {
+/** Nobar / bulk booking vs the nobar budget ("Forecast Nobar", admits), up to the cut-off. Nobar admits are estimated
+ *  from daily admit spikes (Core.bulkDays). Two groups:
+ *    non  = sites without nobar budget: all nobar admits and the DW MH used on those days
+ *    over = sites whose nobar budget ran out: admits and DW MH used after the budget was used up
+ *           (the day it runs out counts pro rata). */
+function nobarUsage(key, cut, b, codes) {
   if (!cut) return null;
   const S = b.sites || {}, T = (TARGETS && TARGETS.sites) || {};
-  const ev = Core.bulkDays(k => { const g = getMonth(k); return g ? g.m : null; }, key, cut)
-    .filter(e => (!codes || codes.has(e.code)) && !((S[e.code] || {}).nobar > 0));
   const by = new Map();
-  ev.forEach(e => {
+  Core.bulkDays(k => { const g = getMonth(k); return g ? g.m : null; }, key, cut).filter(e => !codes || codes.has(e.code)).forEach(e => {
     if (!by.has(e.code)) { const s = S[e.code] || {};
-      by.set(e.code, {code: e.code, cinema: e.cinema, region: (T[e.code] && T[e.code].region) || s.region || "", rate: s.rate || 0, budgetMH: s.mhMonth || 0, days: []}); }
+      by.set(e.code, {code: e.code, cinema: e.cinema, region: (T[e.code] && T[e.code].region) || s.region || "", rate: s.rate || 0, budget: s.nobar || 0, days: []}); }
     by.get(e.code).days.push(e);
   });
-  const sites = [...by.values()].map(x => {
-    const sum = k => x.days.reduce((a, d) => a + d[k], 0);
-    return {...x, n: x.days.length, admits: sum("admits"), nobar: sum("nobar"), dw: sum("dw"), dwExtra: sum("dwExtra"), amount: sum("dw") * x.rate, amountExtra: sum("dwExtra") * x.rate};
-  }).sort((p, q) => q.nobar - p.nobar);
-  const sum = k => sites.reduce((a, x) => a + x[k], 0);
-  return {month: key, cut, sites, tot: {sites: sites.length, days: sum("n"), nobar: sum("nobar"), dw: sum("dw"), dwExtra: sum("dwExtra"), amount: sum("amount"), amountExtra: sum("amountExtra")},
-    budgetedSites: Object.values(S).filter(s => s && s.nobar > 0).length};
+  const non = [], over = [];
+  by.forEach(x => {
+    x.days.sort((p, q) => p.iso.localeCompare(q.iso));
+    x.n = x.days.length; x.used = x.days.reduce((a, d) => a + d.nobar, 0); x.dwAll = x.days.reduce((a, d) => a + d.dw, 0);
+    if (!x.budget) { x.after = x.used; x.dw = x.dwAll; non.push(x); return; }
+    if (x.used <= x.budget) return;
+    let cum = 0, dw = 0, from = null;
+    x.days.forEach(d => { const before = cum; cum += d.nobar; if (cum > x.budget) { const share = before >= x.budget ? 1 : (cum - x.budget) / d.nobar; dw += d.dw * share; if (!from) from = d.iso; } });
+    x.after = x.used - x.budget; x.dw = dw; x.from = from; over.push(x);
+  });
+  const fin = list => { list.forEach(x => x.amount = x.dw * x.rate); list.sort((p, q) => q.after - p.after);
+    const t = k => list.reduce((a, x) => a + (x[k] || 0), 0);
+    return {sites: list, tot: {sites: list.length, budget: t("budget"), used: t("used"), after: t("after"), dw: t("dw"), amount: t("amount")}}; };
+  return {month: key, cut, non: fin(non), over: fin(over), budgetedSites: Object.values(S).filter(s => s && s.nobar > 0).length};
 }
 
 /** Add Rupiah, FT, rate and region to a budget-vs-actual result (rate = Rp per MH DW from the budget sheet). */

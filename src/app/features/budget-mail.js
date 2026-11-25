@@ -18,7 +18,6 @@ const monthId = key => CAL.months[+key.slice(5, 7) - 1];
 const daysIn = key => { const [y, m] = key.split("-").map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate(); };
 const regLabel = s => String(s || "").replace(/^REGION/i, "Region");
 
-const dList = days => { const ds = days.map(d => +d.iso.slice(8)); return ds.join(", ") + " " + CAL.monthsShort[+days[0].iso.slice(5, 7) - 1]; };
 
 const INK = "#1d1d1f", MUT = "#6e6e73", LINE = "#d2d2d7", BLU = "#0a84ff", ORG = "#ff9f0a", RED = "#d70015", GRN = "#248a3d";
 const FONT = "font-family:Calibri,Arial,Helvetica,sans-serif";
@@ -57,7 +56,7 @@ export function paragraph(r, P = pack(r), html = false) {
     : N.vs < -0.05 ? `Pemakaian masih ${b("di bawah budget MTD", GRN)} (${rpS(N.bt)}). ` : `Pemakaian sesuai budget MTD (${rpS(N.bt)}). `;
   s += over.length ? `Ada ${over.length} site yang over budget MTD (lihat tabel 3).` : "Tidak ada site yang over budget MTD.";
   const nb = r.nobar;
-  if (nb && nb.tot.sites) s += ` Selain itu ada indikasi nobar/bulk booking di ${nb.tot.sites} site yang tidak punya budget nobar: ±${n0(nb.tot.nobar)} admits dengan ${n0(nb.tot.dw)} MH DW (${rpS(nb.tot.amount)}) di hari-hari tersebut (lihat tabel 4).`;
+  if (nb && (nb.non.tot.sites || nb.over.tot.sites)) s += ` Untuk nobar/bulk booking: ${nb.non.tot.sites} site tanpa budget nobar memakai ${n0(nb.non.tot.dw)} MH DW, dan ${nb.over.tot.sites} site sudah melewati budget nobar dengan ${n0(nb.over.tot.dw)} MH DW setelah budgetnya habis (lihat tabel 4).`;
   return s;
 }
 
@@ -110,21 +109,26 @@ ${nobarHTML(r, {td, th, tf, R})}
 <p style="margin:0">Best regards,<br>Ivan</p></div>`;
 }
 
-/** 4. Nobar / bulk booking at sites with no nobar budget. */
+/** 4. Nobar / bulk booking: (a) sites without nobar budget, (b) sites whose nobar budget ran out. */
 function nobarHTML(r, {td, th, tf, R}) {
   const nb = r.nobar; if (!nb) return "";
-  const D = dS(r.cut), T = nb.tot;
-  const head = h2(`4. Nobar / bulk booking non-budget (${T.sites} site)`);
-  if (!T.sites) return head + `<p style="margin:0;color:${GRN}">Tidak ada indikasi nobar/bulk booking di site tanpa budget nobar s.d. ${D}.</p>`;
-  const rows = nb.sites.map(x => `<tr><td style="${td};white-space:nowrap">${esc(regLabel(x.region))}</td><td style="${td}">${esc(x.cinema)}</td><td style="${td}">${dList(x.days)} <span style="color:${MUT}">(${x.n} hari)</span></td>
-<td style="${td + R};font-weight:bold">${n0(x.nobar)}</td><td style="${td + R}">${n0(x.dw)}</td><td style="${td + R};color:${x.dwExtra ? ORG : MUT}">${x.dwExtra ? "+" + n0(x.dwExtra) : "–"}</td><td style="${td + R}">${rpS(x.amount)}</td></tr>`).join("");
-  return head + `<p style="margin:0 0 8px">Site berikut <b>tidak punya budget nobar</b> (Forecast Nobar = 0) tetapi admits hariannya melonjak jauh di atas hari normal, sehingga terindikasi nobar/bulk booking. Total ±<b>${n0(T.nobar)} admits</b> nobar di ${T.days} hari, dengan <b>${n0(T.dw)} MH DW</b> terpakai di hari-hari tersebut (${rpS(T.amount)}); ${n0(T.dwExtra)} MH di antaranya di atas pemakaian DW hari normal.</p>
-<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:900px">
-<tr><th style="${th}">Region</th><th style="${th}">Site</th><th style="${th}">Tanggal nobar</th><th style="${th + R}">Admits nobar (est.)</th><th style="${th + R}">MH DW hari nobar</th><th style="${th + R}">MH DW di atas normal</th><th style="${th + R}">Amount DW</th></tr>
-${rows}
-<tr><td style="${tf}" colspan="3">Total ${T.sites} site · ${T.days} hari</td><td style="${tf + R}">${n0(T.nobar)}</td><td style="${tf + R}">${n0(T.dw)}</td><td style="${tf + R}">+${n0(T.dwExtra)}</td><td style="${tf + R}">${rpS(T.amount)}</td></tr>
-</table>
-<p style="font-size:11px;color:${MUT};margin:6px 0 0">Admits nobar (est.) = admits hari itu − admits normal site tsb. Admits normal = median admits di hari yang sama (Senin, Selasa, …) 3 bulan terakhir, disesuaikan dengan tren nasional hari itu (libur/film besar tidak ikut terhitung). Hari ditandai nobar bila admits ≥ 1,6× normal dan selisihnya ≥ 300. MH DW di atas normal = MH DW hari itu − MH DW median hari yang sama. Angka ini estimasi; konfirmasi CM lewat Reason kategori Nobar.</p>`;
+  const D = dS(r.cut), A = nb.non, B = nb.over;
+  const tbl = (cols, rows, foot) => `<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:900px;margin:0 0 4px">
+<tr>${cols.map((c, i) => `<th style="${th + (i > 1 ? R : "")}">${c}</th>`).join("")}</tr>${rows}${foot}</table>`;
+  const cell = (v, st = "") => `<td style="${td + R + st}">${v}</td>`;
+  const name = x => `<td style="${td};white-space:nowrap">${esc(regLabel(x.region))}</td><td style="${td}">${esc(x.cinema)}</td>`;
+  let h = h2("4. Nobar / bulk booking s.d. " + D);
+  h += `<p style="margin:0 0 6px"><b>a. Site tanpa budget nobar (${A.tot.sites} site)</b></p>`;
+  h += A.tot.sites ? tbl(["Region", "Site", "Admits nobar", "MH DW terpakai", "Amount DW"],
+    A.sites.map(x => `<tr>${name(x)}${cell(n0(x.used), ";font-weight:bold")}${cell(n0(x.dw))}${cell(rpS(x.amount))}</tr>`).join(""),
+    `<tr><td style="${tf}" colspan="2">Total ${A.tot.sites} site</td>${[n0(A.tot.used), n0(A.tot.dw), rpS(A.tot.amount)].map(v => `<td style="${tf + R}">${v}</td>`).join("")}</tr>`)
+    : `<p style="margin:0 0 4px;color:${GRN}">Tidak ada.</p>`;
+  h += `<p style="margin:14px 0 6px"><b>b. Site dengan budget nobar yang sudah habis (${B.tot.sites} site)</b></p>`;
+  h += B.tot.sites ? tbl(["Region", "Site", "Budget nobar", "Admits nobar", "Lebih dari budget", "MH DW setelah habis", "Amount DW"],
+    B.sites.map(x => `<tr>${name(x)}${cell(n0(x.budget))}${cell(n0(x.used))}${cell("+" + n0(x.after), `;color:${RED};font-weight:bold`)}${cell(n0(x.dw))}${cell(rpS(x.amount))}</tr>`).join(""),
+    `<tr><td style="${tf}" colspan="2">Total ${B.tot.sites} site</td>${[n0(B.tot.budget), n0(B.tot.used), "+" + n0(B.tot.after), n0(B.tot.dw), rpS(B.tot.amount)].map(v => `<td style="${tf + R}">${v}</td>`).join("")}</tr>`)
+    : `<p style="margin:0 0 4px;color:${GRN}">Tidak ada, semua masih dalam budget nobar.</p>`;
+  return h + `<p style="font-size:11px;color:${MUT};margin:6px 0 0">Admits nobar = estimasi dari lonjakan admits harian (hari dengan admits ≥ 1,6× hari normal dan selisih ≥ 300; libur/film besar dan promo rutin tidak dihitung). MH DW terpakai = MH DW di hari nobar tersebut. Budget nobar = Forecast Nobar di sheet budget.</p>`;
 }
 
 export function mailText(r) {
@@ -139,8 +143,10 @@ export function mailText(r) {
 
 function nobarText(r) {
   const nb = r.nobar; if (!nb) return [];
-  const T = nb.tot;
-  if (!T.sites) return [`4. Nobar/bulk booking non-budget: tidak ada s.d. ${dS(r.cut)}.`, ""];
-  return [`4. Nobar/bulk booking di site tanpa budget nobar (${T.sites} site, ${T.days} hari): ±${n0(T.nobar)} admits, ${n0(T.dw)} MH DW (${rpS(T.amount)}), +${n0(T.dwExtra)} MH di atas normal`,
-    ...nb.sites.map(x => `${regLabel(x.region)} · ${x.cinema} (${dList(x.days)}): ±${n0(x.nobar)} admits, ${n0(x.dw)} MH DW${x.dwExtra ? ` (+${n0(x.dwExtra)} di atas normal)` : ""}, ${rpS(x.amount)}`), ""];
+  const A = nb.non, B = nb.over;
+  return [`4. Nobar / bulk booking s.d. ${dS(r.cut)}`,
+    `a. Tanpa budget nobar (${A.tot.sites} site): ${n0(A.tot.used)} admits, ${n0(A.tot.dw)} MH DW (${rpS(A.tot.amount)})`,
+    ...A.sites.map(x => `   ${regLabel(x.region)} · ${x.cinema}: ${n0(x.used)} admits, ${n0(x.dw)} MH DW`),
+    `b. Budget nobar sudah habis (${B.tot.sites} site): +${n0(B.tot.after)} admits di atas budget, ${n0(B.tot.dw)} MH DW setelah habis (${rpS(B.tot.amount)})`,
+    ...B.sites.map(x => `   ${regLabel(x.region)} · ${x.cinema}: budget ${n0(x.budget)}, terpakai ${n0(x.used)} (+${n0(x.after)}), ${n0(x.dw)} MH DW setelah habis`), ""];
 }
