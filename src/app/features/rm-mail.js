@@ -20,7 +20,7 @@ const greet = region => { const n = +(String(region).match(/\d+/) || [])[0]; ret
 const daysLeft = (cut, key) => { const [y, m] = key.split("-").map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate() - +cut.slice(8); };
 
 // Regions whose RM email also shows "excl. bulk booking" (DW for bulk booking outside the DW budget, from r.bulk).
-const BULK_RM = ["REGION 1"];
+const BULK_RM = ["REGION 1", "REGION 5"];
 const PUR = "#6e3fc9";
 const INK = "#1d1d1f", MUT = "#6e6e73", LINE = "#d2d2d7", GRY = "#c7c7cc", BLU = "#0a84ff", ORG = "#ff9f0a", RED = "#d70015", GRN = "#248a3d";
 const FONT = "font-family:Calibri,Arial,Helvetica,sans-serif";
