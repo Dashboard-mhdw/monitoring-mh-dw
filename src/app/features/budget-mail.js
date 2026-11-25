@@ -1,7 +1,6 @@
-// "FYI" email to payroll control (Kak Cinthia), in rupiah, against the FULL-MONTH DW budget. Three tables:
-//   1. per region: budget, terpakai total, terpakai excl. bulk booking (Region 1 & 5 only), sisa
-//   2. sites over their monthly budget
-//   3. bulk booking left out (per site summary)
+// "FYI" email to payroll control (Kak Cinthia), in rupiah, against the FULL-MONTH DW budget. Original layout, three tables:
+//   1. national amount · 2. per region · 3. sites over their monthly budget
+//   each with an extra "excl. bulk booking" figure (bulk booking DW outside the DW budget, Region 1 & 5 only).
 // Per-site and per-day breakdown goes to the Excel attachment (attachment()). Email only — the dashboard shows plain actual.
 // Always Bahasa Indonesia, id-ID number format. Inline styles so it survives copy-paste into Outlook/Gmail.
 import { esc } from "../ui/dom.js";
@@ -58,45 +57,57 @@ export function paragraph(r, P = pack(r), html = false) {
   return s;
 }
 
-const h2 = s => `<p style="margin:22px 0 6px;font-size:15px;font-weight:bold">${s}</p>`;
+const h2 = s => `<p style="margin:20px 0 6px;font-size:15px;font-weight:bold">${s}</p>`;
 const small = (v, col = MUT) => `<div style="font-size:11px;color:${col}">${v}</div>`;
+const kpi = (l, v, s, col = INK) => `<td style="border:1px solid ${LINE};padding:10px 12px;vertical-align:top;width:25%"><div style="font-size:12px;color:${MUT}">${l}</div><div style="font-size:20px;font-weight:bold;color:${col};line-height:1.3">${v}</div><div style="font-size:12px;color:${MUT}">${s}</div></td>`;
+const meter = (u, col, W = 90) => {
+  const f = Math.round(W * Math.min(Math.max(u, 0), 1));
+  return `<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;display:inline-table;vertical-align:middle"><tr>${f ? `<td style="background:${col};width:${f}px;height:8px;font-size:0;line-height:0">&nbsp;</td>` : ""}${W - f ? `<td style="background:#ececf0;width:${W - f}px;height:8px;font-size:0;line-height:0">&nbsp;</td>` : ""}</tr></table> <span style="font-size:12px;color:${col};font-weight:bold">${pct(u)}</span>`;
+};
+const uCol = u => u > 1 ? RED : u >= 0.9 ? ORG : GRN;
 
 export function mailHTML(r) {
-  const P = pack(r), {N, regions, over, overX} = P, M = monthId(r.month), D = dS(r.cut), X = N.ex > 0, bk = r.bulk;
-  const td = `border:1px solid ${LINE};padding:6px 10px;font-size:13px;color:${INK};vertical-align:top`;
+  const P = pack(r), {N, regions, over, overX} = P, M = monthId(r.month), D = dS(r.cut), X = N.ex > 0;
+  const td = `border:1px solid ${LINE};padding:6px 10px;font-size:13px;color:${INK}`;
   const th = `border:1px solid ${LINE};background:#f5f5f7;padding:6px 10px;font-size:12px;color:${MUT};font-weight:bold;text-align:left`;
   const thX = `${th};background:#f1ecfb;color:${PUR}`;
   const tf = `${th};color:${INK}`, R = ";text-align:right";
-  const tbl = inner => `<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:760px">${inner}</table>`;
-  const used = (v, bm, col = INK) => `<b style="color:${col}">${rpS(v)}</b>${small(of(v, bm) + " dari budget", v > bm * 1.0001 ? RED : MUT)}`;
+  const left = N.bm - N.ac, leftX = N.bm - N.acX;
 
-  // 1. per region
-  const regRow = (o, foot) => { const st = foot ? tf : td, left = o.bm - o.ac, leftX = o.bm - o.acX;
-    return `<tr><td style="${st};white-space:nowrap">${foot ? "Total" : `<b>${esc(regLabel(o.region))}</b>`}</td><td style="${st + R}">${rpS(o.bm)}</td>
-<td style="${st + R}">${used(o.ac, o.bm)}</td>${X ? `<td style="${st + R}">${o.ex ? used(o.acX, o.bm, PUR) : `<span style="color:${MUT}">sama</span>`}</td>` : ""}
-<td style="${st + R};color:${left < 0 ? RED : INK}">${rpS(left)}${X && o.ex ? small(`excl.: ${rpS(leftX)}`, PUR) : ""}</td></tr>`; };
-  const t1 = tbl(`<tr><th style="${th}">Region</th><th style="${th + R}">Budget ${M}</th><th style="${th + R}">Terpakai total</th>${X ? `<th style="${thX + R}">${XL}</th>` : ""}<th style="${th + R}">Sisa</th></tr>
-${regions.map(o => regRow(o, false)).join("")}${regRow({bm: N.bm, ac: N.ac, acX: N.acX, ex: N.ex}, true)}`);
+  // 2. per region
+  const oc = new Map(), ocX = new Map();
+  over.forEach(x => { oc.set(x.region, (oc.get(x.region) || 0) + 1); if (x.overMhX > 0.5) ocX.set(x.region, (ocX.get(x.region) || 0) + 1); });
+  const reg = regions.map(o => { const u = o.bm ? o.ac / o.bm : 0, uX = o.bm ? o.acX / o.bm : 0, n = oc.get(o.region) || 0;
+    return `<tr><td style="${td};white-space:nowrap"><b>${esc(regLabel(o.region))}</b></td><td style="${td + R}">${rpS(o.bm)}</td><td style="${td + R};font-weight:bold">${rpS(o.ac)}</td>
+<td style="${td};white-space:nowrap">${o.bm ? meter(u, uCol(u)) : `<span style="color:${MUT}">tanpa budget</span>`}</td><td style="${td + R};color:${o.bm - o.ac < 0 ? RED : INK}">${rpS(o.bm - o.ac)}</td>
+${X ? (o.ex ? `<td style="${td + R};font-weight:bold;color:${PUR}">${rpS(o.acX)}</td><td style="${td};white-space:nowrap">${meter(uX, uCol(uX))}</td><td style="${td + R};color:${o.bm - o.acX < 0 ? RED : INK}">${rpS(o.bm - o.acX)}</td>`
+      : `<td style="${td};color:${MUT};text-align:center" colspan="3">sama</td>`) : ""}<td style="${td + R};color:${n ? RED : MUT}">${n || "–"}</td></tr>`; }).join("");
 
-  // 2. over the monthly budget
-  const t2 = over.length ? tbl(`<tr><th style="${th}">Site</th><th style="${th + R}">Budget (MH)</th><th style="${th + R}">Terpakai (MH)</th><th style="${th + R}">Over</th>${X ? `<th style="${thX + R}">Over excl. bulk</th>` : ""}</tr>
-${over.map(x => `<tr><td style="${td}">${esc(x.cinema)}${small(esc(regLabel(x.region)))}</td><td style="${td + R}">${x.budgetMonth ? n0(x.budgetMonth) : `<span style="color:${ORG}">tanpa budget</span>`}</td><td style="${td + R}">${n0(x.actual)}</td>
-<td style="${td + R};color:${RED};font-weight:bold">${n0(x.overMh)} MH${small(rpS(x.overMh * (x.rate || 0)), RED)}</td>${X ? `<td style="${td + R};color:${x.overMhX > 0.5 ? RED : GRN}">${x.ex ? (x.overMhX > 0.5 ? `${n0(x.overMhX)} MH` : "aman") : `<span style="color:${MUT}">sama</span>`}</td>` : ""}</tr>`).join("")}`)
-    : `<p style="margin:0;color:${GRN}">Belum ada site yang melewati budget 1 bulan.</p>`;
+  // 3. sites over the monthly budget
+  const ov = over.map(x => `<tr><td style="${td};white-space:nowrap">${esc(regLabel(x.region))}</td><td style="${td}">${esc(x.cinema)}</td><td style="${td + R}">${x.budgetMonth ? n0(x.budgetMonth) : `<span style="color:${ORG}">tanpa budget</span>`}</td><td style="${td + R};font-weight:bold">${n0(x.actual)}</td>
+<td style="${td + R};color:${RED};font-weight:bold">+${n0(x.overMh)}</td><td style="${td + R};color:${RED}">${rpS(x.overMh * (x.rate || 0))}</td>${X ? `<td style="${td + R};color:${!x.ex ? MUT : x.overMhX > 0.5 ? RED : GRN}">${!x.ex ? "sama" : x.overMhX > 0.5 ? "+" + n0(x.overMhX) : "aman"}</td>` : ""}</tr>`).join("");
+  const ovT = {mh: over.reduce((a, x) => a + x.overMh, 0), rp: over.reduce((a, x) => a + x.overMh * (x.rate || 0), 0), mhX: over.reduce((a, x) => a + Math.max(0, x.overMhX), 0)};
 
-  // 3. bulk booking left out
-  const t3 = X ? tbl(`<tr><th style="${th}">Site</th><th style="${th}">Kondisi</th><th style="${th + R}">Hari</th><th style="${th + R}">Admits</th><th style="${th + R}">MH DW</th><th style="${thX + R}">Amount</th></tr>
-${bk.sites.map(x => `<tr><td style="${td}">${esc(x.cinema)}${small(esc(regLabel(x.region)))}</td><td style="${td};color:${x.type === "none" ? ORG : RED}">${x.type === "none" ? "Tanpa budget DW" : `Budget habis ${dS(x.from)}`}</td>
-<td style="${td + R}">${x.use.length}</td><td style="${td + R}">${n0(x.admits)}</td><td style="${td + R}">${n0(x.dw)}</td><td style="${td + R};font-weight:bold;color:${PUR}">${rpS(x.amount)}</td></tr>`).join("")}
-<tr><td style="${tf}" colspan="2">Total ${bk.tot.sites} site</td><td style="${tf + R}">${bk.sites.reduce((a, x) => a + x.use.length, 0)}</td><td style="${tf + R}">${n0(bk.tot.admits)}</td><td style="${tf + R}">${n0(bk.tot.dw)}</td><td style="${tf + R};color:${PUR}">${rpS(bk.tot.amount)}</td></tr>`) : "";
-
-  return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:800px">
+  return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:900px">
 <p style="margin:0 0 12px">Dear Kak Cinthia,</p>
-<p style="margin:0 0 6px">${paragraph(r, P, true)}</p>
-<!--jpg-->${h2(`1. Pemakaian per region · ${M} s.d. ${D}`)}${t1}
-${h2(`2. Site melewati budget 1 bulan (${over.length}${X ? ` · ${overX} excl. bulk booking` : ""})`)}${t2}
-${X ? h2(`3. Bulk booking Region 1 &amp; 5 di luar budget DW`) + t3 : ""}
-<p style="font-size:11px;color:${MUT};margin:8px 0 14px">Amount = MH DW × rate tiap site. Budget = budget DW 1 bulan.${X ? ` ${XL} = terpakai total dikurangi MH DW bulk booking Region 1 &amp; 5 pada site tanpa budget DW, atau setelah budget DW-nya habis. Region lain tidak berubah.` : ""} Detail: <a href="${DASH}" style="color:${BLU}">dashboard Monitoring MH DW</a>.</p>
+<p style="margin:0 0 16px">${paragraph(r, P, true)}</p>
+<!--jpg-->${h2(`1. Amount nasional · ${M} s.d. ${D}`)}
+<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:880px;margin:0 0 6px"><tr>
+${kpi("Budget DW " + M, rpS(N.bm), n0(N.mhB) + " MH")}${kpi("Terpakai total", rpS(N.ac), `${pct(N.bm ? N.ac / N.bm : 0)} dari budget`, N.ac > N.bm ? RED : INK)}${X ? kpi(XL + " R1 &amp; R5", rpS(N.acX), `${pct(N.bm ? N.acX / N.bm : 0)} · bulk booking −${rpS(N.ex)}`, PUR) : ""}${kpi("Sisa budget", rpS(left), X ? `excl. bulk booking: ${rpS(leftX)}` : `${n0(N.mhB - N.mhA)} MH`, left < 0 ? RED : GRN)}
+</tr></table>
+${h2("2. Pemakaian amount per region")}
+<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:900px">
+<tr><th style="${th}">Region</th><th style="${th + R}">Budget bulan</th><th style="${th + R}">Terpakai total</th><th style="${th}">Terpakai vs budget</th><th style="${th + R}">Sisa</th>${X ? `<th style="${thX + R}">${XL}</th><th style="${thX}">vs budget</th><th style="${thX + R}">Sisa</th>` : ""}<th style="${th + R}">Site over</th></tr>
+${reg}
+<tr><td style="${tf}">Nasional</td><td style="${tf + R}">${rpS(N.bm)}</td><td style="${tf + R}">${rpS(N.ac)}</td><td style="${tf}">${pct(N.bm ? N.ac / N.bm : 0)}</td><td style="${tf + R}">${rpS(left)}</td>${X ? `<td style="${tf + R};color:${PUR}">${rpS(N.acX)}</td><td style="${tf}">${pct(N.bm ? N.acX / N.bm : 0)}</td><td style="${tf + R}">${rpS(leftX)}</td>` : ""}<td style="${tf + R}">${over.length || "–"}</td></tr>
+</table>
+${h2(`3. Site melewati budget 1 bulan (${over.length}${X ? ` · ${overX} excl. bulk booking` : ""})`)}
+${over.length ? `<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:900px">
+<tr><th style="${th}">Region</th><th style="${th}">Site</th><th style="${th + R}">Budget (MH)</th><th style="${th + R}">Terpakai (MH)</th><th style="${th + R}">Over (MH)</th><th style="${th + R}">Over (Rp)</th>${X ? `<th style="${thX + R}">Over excl. bulk (MH)</th>` : ""}</tr>
+${ov}
+<tr><td style="${tf}" colspan="4">Total ${over.length} site</td><td style="${tf + R};color:${RED}">+${n0(ovT.mh)}</td><td style="${tf + R};color:${RED}">${rpS(ovT.rp)}</td>${X ? `<td style="${tf + R}">+${n0(ovT.mhX)}</td>` : ""}</tr>
+</table>` : `<p style="margin:0;color:${GRN}">Belum ada site yang melewati budget 1 bulan s.d. ${D}.</p>`}
+<p style="font-size:11px;color:${MUT};margin:6px 0 14px">Amount = MH DW × rate MH DW tiap site. Budget = budget DW 1 bulan; site tanpa budget dihitung over sebesar seluruh pemakaiannya.${X ? ` ${XL} = terpakai total dikurangi MH DW bulk booking Region 1 &amp; 5 pada site tanpa budget DW atau setelah budget DW-nya habis; region lain sama. Rincian per site dan per tanggal ada di Excel lampiran.` : ""} Detail: <a href="${DASH}" style="color:${BLU}">dashboard Monitoring MH DW</a>.</p>
 <!--/jpg--><p style="margin:0 0 12px">Terima kasih.</p>
 <p style="margin:0">Best regards,<br>Ivan</p></div>`;
 }
@@ -104,11 +115,11 @@ ${X ? h2(`3. Bulk booking Region 1 &amp; 5 di luar budget DW`) + t3 : ""}
 export function mailText(r) {
   const P = pack(r), {N, regions, over} = P, X = N.ex > 0, bk = r.bulk;
   return ["Dear Kak Cinthia,", "", paragraph(r, P, false), "",
-    "1. Per region (budget / terpakai total" + (X ? " / excl. bulk booking" : "") + " / sisa):",
+    `1. Amount nasional: budget ${rpS(N.bm)} | terpakai total ${rpS(N.ac)}` + (X ? ` | excl. bulk booking R1 & R5 ${rpS(N.acX)}` : "") + ` | sisa ${rpS(N.bm - N.ac)}`, "",
+    "2. Per region (budget / terpakai total" + (X ? " / excl. bulk booking" : "") + " / sisa):",
     ...regions.map(o => `${regLabel(o.region)}: ${rpS(o.bm)} / ${rpS(o.ac)}` + (X ? ` / ${o.ex ? rpS(o.acX) : "sama"}` : "") + ` / ${rpS(o.bm - o.ac)}`),
     `Total: ${rpS(N.bm)} / ${rpS(N.ac)}` + (X ? ` / ${rpS(N.acX)}` : "") + ` / ${rpS(N.bm - N.ac)}`, "",
-    `2. Site melewati budget 1 bulan (${over.length}):`, ...(over.length ? over.map(x => `${x.cinema}: ${n0(x.actual)} vs ${x.budgetMonth ? n0(x.budgetMonth) : "tanpa budget"} MH (+${n0(x.overMh)})` + (X && x.ex ? ` · excl. bulk ${x.overMhX > 0.5 ? "+" + n0(x.overMhX) + " MH" : "aman"}` : "")) : ["Tidak ada."]), "",
-    ...(X ? ["3. Bulk booking Region 1 & 5 di luar budget DW:", ...bk.sites.map(x => `${x.cinema} (${x.type === "none" ? "tanpa budget DW" : "budget habis " + dS(x.from)}): ${x.use.length} hari, ${n0(x.admits)} admits, ${n0(x.dw)} MH, ${rpS(x.amount)}`), ""] : []),
+    `3. Site melewati budget 1 bulan (${over.length}):`, ...(over.length ? over.map(x => `${x.cinema}: ${n0(x.actual)} vs ${x.budgetMonth ? n0(x.budgetMonth) : "tanpa budget"} MH (+${n0(x.overMh)})` + (X && x.ex ? ` · excl. bulk ${x.overMhX > 0.5 ? "+" + n0(x.overMhX) + " MH" : "aman"}` : "")) : ["Tidak ada."]), "",
     "Rincian per site: lampiran Excel.", `Detail: ${DASH}`, "", "Terima kasih.", "", "Best regards,", "Ivan"].join("\n");
 }
 
