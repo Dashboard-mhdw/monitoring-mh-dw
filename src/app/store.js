@@ -160,8 +160,8 @@ function nobarUsage(key, cut, b, codes) {
     x.after = x.used - x.budget; x.dw = dw; x.from = from; over.push(x);
   });
   const fin = list => { list.forEach(x => x.amount = x.dw * x.rate); list.sort((p, q) => q.after - p.after);
-    const t = k => list.reduce((a, x) => a + (x[k] || 0), 0);
-    return {sites: list, tot: {sites: list.length, budget: t("budget"), used: t("used"), after: t("after"), dw: t("dw"), amount: t("amount")}}; };
+    const sum = k => list.reduce((a, x) => a + (x[k] || 0), 0);
+    return {sites: list, tot: {sites: list.length, budget: sum("budget"), used: sum("used"), after: sum("after"), dw: sum("dw"), amount: sum("amount")}}; };
   return {month: key, cut, non: fin(non), over: fin(over), budgetedSites: Object.values(S).filter(s => s && s.nobar > 0).length};
 }
 
