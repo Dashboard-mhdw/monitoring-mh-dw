@@ -140,6 +140,7 @@ export function budgetVsActual(key, cut, transfers) {
  *    none  = site without DW budget this month: DW on its bulk-booking days
  *    habis = site whose monthly DW budget is used up: DW on bulk-booking days after that (the day it runs out pro rata)
  *  Bulk-booking days and nobar admits are estimated from daily admit spikes (Core.bulkDays). */
+const BULK_REGIONS = ["REGION 1", "REGION 5"];   // only regions that reported nobar / bulk booking
 function bulkOutsideBudget(key, cut, b, codes) {
   const g = getMonth(key); if (!cut || !g) return null;
   const S = b.sites || {}, T = (TARGETS && TARGETS.sites) || {};
@@ -161,9 +162,10 @@ function bulkOutsideBudget(key, cut, b, codes) {
       use = days.filter(d => left[d.iso] > 0).map(d => ({iso: d.iso, admits: d.nobar, dw: Math.min(d.dw, left[d.iso])}));
     }
     use = use.filter(d => d.dw > 0);
-    if (!use.length) return;
+    const region = (T[code] && T[code].region) || s.region || "";
+    if (!use.length || !BULK_REGIONS.includes(region)) return;
     const dw = use.reduce((a, d) => a + d.dw, 0);
-    sites.push({code, cinema: days[0].cinema, region: (T[code] && T[code].region) || s.region || "", type: budget > 0 ? "habis" : "none", budget, from,
+    sites.push({code, cinema: days[0].cinema, region, type: budget > 0 ? "habis" : "none", budget, from,
       use, admits: use.reduce((a, d) => a + d.admits, 0), dw, amount: dw * rate});
   });
   sites.sort((p, q) => q.amount - p.amount || q.dw - p.dw);
