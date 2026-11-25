@@ -6,6 +6,7 @@ import { getMonth, alertsOn, alertsRange } from "../store.js";
 import { state } from "../state.js";
 import { trendData } from "./trend.js";
 import { bvaCurrent, statusLabel } from "./budget.js";
+import * as Mail from "./budget-mail.js";
 
 const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 const fileMonth = k => monthName(k).replace(" ", "_");
@@ -104,5 +105,13 @@ function exportBudget() {
   W.write(`DW_Budget_vs_Actual_${fileMonth(key)}_sd_${r.cut}.xlsx`);
 }
 
+function exportBudgetMail() {
+  const r = bvaCurrent(); if (!r) return;
+  const W = workbook(); if (!W) return;
+  const a = Mail.attachment(r);
+  a.sheets.forEach(sh => W.add(sh.name, sh.aoa, sh.cols));
+  W.write(a.filename);
+}
+
 /** data-act value → handler */
-export const ACTIONS = {xlsx: exportMonth, csv: exportCsv, "trend-xlsx": exportTrend, "alert-xlsx": exportAlert, "budget-xlsx": exportBudget};
+export const ACTIONS = {xlsx: exportMonth, csv: exportCsv, "trend-xlsx": exportTrend, "alert-xlsx": exportAlert, "budget-xlsx": exportBudget, "budget-mail-xlsx": exportBudgetMail};

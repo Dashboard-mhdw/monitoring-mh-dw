@@ -1,6 +1,8 @@
-// "FYI" email to payroll control (Kak Cinthia), in rupiah, in two versions:
-//   actual, and actual excl. bulk booking outside the DW budget (email only — the dashboard always shows actual).
-//   1. national · 2. per region · 3. sites over budget MTD · 4. bulk booking left out (site, dates + admits, MH DW)
+// "FYI" email to payroll control (Kak Cinthia), in rupiah, against the FULL-MONTH DW budget. Three tables:
+//   1. per region: budget, terpakai total, terpakai excl. bulk booking (Region 1 & 5 only), sisa
+//   2. sites over their monthly budget
+//   3. bulk booking left out (per site summary)
+// Per-site and per-day breakdown goes to the Excel attachment (attachment()). Email only — the dashboard shows plain actual.
 // Always Bahasa Indonesia, id-ID number format. Inline styles so it survives copy-paste into Outlook/Gmail.
 import { esc } from "../ui/dom.js";
 import { _dicts } from "../i18n.js";
@@ -22,47 +24,42 @@ const INK = "#1d1d1f", MUT = "#6e6e73", LINE = "#d2d2d7", BLU = "#0a84ff", ORG =
 const FONT = "font-family:Calibri,Arial,Helvetica,sans-serif";
 const XL = "Excl. bulk booking";
 
-/** All numbers the email needs (rupiah = MH × rate MH DW of each site). ex = bulk booking DW outside budget, per site. */
+/** All numbers (rupiah = MH × rate MH DW of each site). ex = bulk booking DW left out, per site (Region 1 & 5). */
 function pack(r) {
-  const rows = r.rows, T = r.tot, bk = r.bulk;
-  const left = daysIn(r.month) - +r.cut.slice(8);
+  const rows = r.rows, bk = r.bulk;
   const ex = new Map(); if (bk) bk.sites.forEach(x => ex.set(x.code, x));
   const exMh = x => (ex.get(x.code) || {}).dw || 0, exRp = x => (ex.get(x.code) || {}).amount || 0;
-  const N = {bm: T.amountMonth || 0, bt: T.amountToDate || 0, ac: T.amountActual || 0, mhB: T.budgetMonth};
-  N.ex = rows.reduce((a, x) => a + exRp(x), 0); N.exMh = rows.reduce((a, x) => a + exMh(x), 0); N.acX = N.ac - N.ex;
+  const site = rows.map(x => ({...x, bm: x.amountMonth || 0, ac: x.amountActual || 0, exMh: exMh(x), ex: exRp(x)}))
+    .map(x => ({...x, acX: x.ac - x.ex, mhX: x.actual - x.exMh, overMh: x.actual - x.budgetMonth, overMhX: x.actual - x.exMh - x.budgetMonth}));
+  const sum = (list, k) => list.reduce((a, x) => a + (x[k] || 0), 0);
+  const N = {bm: sum(site, "bm"), ac: sum(site, "ac"), ex: sum(site, "ex"), exMh: sum(site, "exMh"), mhB: sum(site, "budgetMonth"), mhA: sum(site, "actual")}; N.acX = N.ac - N.ex;
   const g = new Map();
-  rows.forEach(x => {
-    const k = x.region || "Tanpa region";
-    if (!g.has(k)) g.set(k, {region: k, bm: 0, bt: 0, ac: 0, ex: 0});
-    const o = g.get(k); o.bm += x.amountMonth || 0; o.bt += x.amountToDate || 0; o.ac += x.amountActual || 0; o.ex += exRp(x);
-  });
-  const regions = [...g.values()].map(o => ({...o, acX: o.ac - o.ex})).sort((a, b) => a.region.localeCompare(b.region, undefined, {numeric: true}));
-  const over = rows.filter(x => x.actual > x.budgetToDate + 0.5).map(x => {
-    const rate = x.rate || 0, o = x.actual - x.budgetToDate, oX = Math.max(0, o - exMh(x));
-    return {...x, overRp: o * rate, overRpX: oX * rate, overMhX: oX};
-  }).sort((a, b) => b.overRp - a.overRp);
-  return {N, regions, over, overX: over.filter(x => x.overMhX > 0.5).length, left};
+  site.forEach(x => { const k = x.region || "Tanpa region"; if (!g.has(k)) g.set(k, []); g.get(k).push(x); });
+  const regions = [...g.entries()].map(([region, l]) => ({region, bm: sum(l, "bm"), ac: sum(l, "ac"), ex: sum(l, "ex"), acX: sum(l, "acX")}))
+    .sort((a, b) => a.region.localeCompare(b.region, undefined, {numeric: true}));
+  const over = site.filter(x => x.overMh > 0.5).sort((a, b) => b.overMh * (b.rate || 0) - a.overMh * (a.rate || 0));
+  return {N, regions, over, overX: over.filter(x => x.overMhX > 0.5).length, site};
 }
 
 export function subject(r) {
-  return `FYI – Pemakaian MH DW ${monthId(r.month)} MTD (s.d. ${dS(r.cut)}) vs Budget`;
+  return `FYI – Pemakaian MH DW ${monthId(r.month)} (s.d. ${dS(r.cut)}) vs Budget`;
 }
 
-const vs = (ac, bt) => bt ? sgn(ac / bt - 1) : "–";
-const vsCol = (ac, bt) => ac > bt * 1.0001 ? RED : GRN;
+const of = (v, b) => b ? pct(v / b) : "–";
 
 /** Opening paragraph. */
 export function paragraph(r, P = pack(r), html = false) {
-  const {N, left} = P, M = monthId(r.month), D = dS(r.cut);
-  const b = (s, col) => html ? `<b style="color:${col}">${s}</b>` : s;
-  let s = `FYI Kak, berikut pemakaian MH DW ${M} s.d. ${D}. Budget ${M} ${rpS(N.bm)}, budget MTD ${rpS(N.bt)}. `;
-  s += `Actual terpakai ${b(rpS(N.ac), vsCol(N.ac, N.bt))} (${vs(N.ac, N.bt)} vs budget MTD), sisa ${rpS(N.bm - N.ac)}${left > 0 ? ` untuk ${left} hari` : ""}.`;
-  if (N.ex > 0) s += ` Di dalamnya ada ${rpS(N.ex)} (${n0(N.exMh)} MH) untuk bulk booking di luar budget DW; tanpa itu terpakai ${b(rpS(N.acX), vsCol(N.acX, N.bt))} (${vs(N.acX, N.bt)}), sisa ${rpS(N.bm - N.acX)}.`;
+  const {N} = P, M = monthId(r.month), D = dS(r.cut);
+  const b = s => html ? `<b>${s}</b>` : s;
+  let s = `FYI Kak, berikut pemakaian MH DW ${M} s.d. ${D} dibanding budget 1 bulan (${rpS(N.bm)}). `;
+  s += `Terpakai total ${b(rpS(N.ac))} (${of(N.ac, N.bm)}), sisa ${rpS(N.bm - N.ac)}.`;
+  if (N.ex > 0) s += ` Jika bulk booking Region 1 & 5 di luar budget DW (${n0(N.exMh)} MH, ${rpS(N.ex)}) dikeluarkan, terpakai menjadi ${b(rpS(N.acX))} (${of(N.acX, N.bm)}), sisa ${rpS(N.bm - N.acX)}.`;
+  s += " Rincian per site terlampir di Excel.";
   return s;
 }
 
 const h2 = s => `<p style="margin:22px 0 6px;font-size:15px;font-weight:bold">${s}</p>`;
-const sub = (v, col) => `<div style="font-size:11px;color:${col}">${v}</div>`;
+const small = (v, col = MUT) => `<div style="font-size:11px;color:${col}">${v}</div>`;
 
 export function mailHTML(r) {
   const P = pack(r), {N, regions, over, overX} = P, M = monthId(r.month), D = dS(r.cut), X = N.ex > 0, bk = r.bulk;
@@ -70,34 +67,36 @@ export function mailHTML(r) {
   const th = `border:1px solid ${LINE};background:#f5f5f7;padding:6px 10px;font-size:12px;color:${MUT};font-weight:bold;text-align:left`;
   const thX = `${th};background:#f1ecfb;color:${PUR}`;
   const tf = `${th};color:${INK}`, R = ";text-align:right";
-  const money = (ac, bt, col = INK) => `<b style="color:${col}">${rpS(ac)}</b>${sub(vs(ac, bt) + " vs MTD", vsCol(ac, bt))}`;
-  const tbl = inner => `<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:820px">${inner}</table>`;
+  const tbl = inner => `<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:760px">${inner}</table>`;
+  const used = (v, bm, col = INK) => `<b style="color:${col}">${rpS(v)}</b>${small(of(v, bm) + " dari budget", v > bm * 1.0001 ? RED : MUT)}`;
 
-  // 1 + 2: national row on top of the region table
-  const regRow = (o, last) => { const st = last ? tf : td;
-    return `<tr><td style="${st};white-space:nowrap">${last ? "Nasional" : `<b>${esc(regLabel(o.region))}</b>`}</td><td style="${st + R}">${rpS(o.bm)}</td><td style="${st + R}">${rpS(o.bt)}</td>
-<td style="${st + R}">${money(o.ac, o.bt)}</td>${X ? `<td style="${st + R}">${money(o.acX, o.bt, PUR)}</td>` : ""}<td style="${st + R};color:${o.bm - o.ac < 0 ? RED : INK}">${rpS(o.bm - o.ac)}${X ? sub(`excl.: ${rpS(o.bm - o.acX)}`, PUR) : ""}</td></tr>`; };
-  const nat = {bm: N.bm, bt: N.bt, ac: N.ac, acX: N.acX};
+  // 1. per region
+  const regRow = (o, foot) => { const st = foot ? tf : td, left = o.bm - o.ac, leftX = o.bm - o.acX;
+    return `<tr><td style="${st};white-space:nowrap">${foot ? "Total" : `<b>${esc(regLabel(o.region))}</b>`}</td><td style="${st + R}">${rpS(o.bm)}</td>
+<td style="${st + R}">${used(o.ac, o.bm)}</td>${X ? `<td style="${st + R}">${o.ex ? used(o.acX, o.bm, PUR) : `<span style="color:${MUT}">sama</span>`}</td>` : ""}
+<td style="${st + R};color:${left < 0 ? RED : INK}">${rpS(left)}${X && o.ex ? small(`excl.: ${rpS(leftX)}`, PUR) : ""}</td></tr>`; };
+  const t1 = tbl(`<tr><th style="${th}">Region</th><th style="${th + R}">Budget ${M}</th><th style="${th + R}">Terpakai total</th>${X ? `<th style="${thX + R}">${XL}</th>` : ""}<th style="${th + R}">Sisa</th></tr>
+${regions.map(o => regRow(o, false)).join("")}${regRow({bm: N.bm, ac: N.ac, acX: N.acX, ex: N.ex}, true)}`);
 
-  const ov = over.map(x => `<tr><td style="${td}">${esc(x.cinema)}${sub(esc(regLabel(x.region)), MUT)}</td><td style="${td + R}">${x.budgetMonth ? n0(x.budgetToDate) : `<span style="color:${ORG}">tanpa budget</span>`}</td><td style="${td + R}">${n0(x.actual)}</td>
-<td style="${td + R};color:${RED};font-weight:bold">${rpS(x.overRp)}</td>${X ? `<td style="${td + R};color:${x.overMhX > 0.5 ? RED : GRN}">${x.overMhX > 0.5 ? rpS(x.overRpX) : "aman"}</td>` : ""}</tr>`).join("");
+  // 2. over the monthly budget
+  const t2 = over.length ? tbl(`<tr><th style="${th}">Site</th><th style="${th + R}">Budget (MH)</th><th style="${th + R}">Terpakai (MH)</th><th style="${th + R}">Over</th>${X ? `<th style="${thX + R}">Over excl. bulk</th>` : ""}</tr>
+${over.map(x => `<tr><td style="${td}">${esc(x.cinema)}${small(esc(regLabel(x.region)))}</td><td style="${td + R}">${x.budgetMonth ? n0(x.budgetMonth) : `<span style="color:${ORG}">tanpa budget</span>`}</td><td style="${td + R}">${n0(x.actual)}</td>
+<td style="${td + R};color:${RED};font-weight:bold">${n0(x.overMh)} MH${small(rpS(x.overMh * (x.rate || 0)), RED)}</td>${X ? `<td style="${td + R};color:${x.overMhX > 0.5 ? RED : GRN}">${x.ex ? (x.overMhX > 0.5 ? `${n0(x.overMhX)} MH` : "aman") : `<span style="color:${MUT}">sama</span>`}</td>` : ""}</tr>`).join("")}`)
+    : `<p style="margin:0;color:${GRN}">Belum ada site yang melewati budget 1 bulan.</p>`;
 
-  const days = x => x.use.map(d => `${+d.iso.slice(8)} <span style="color:${MUT}">(${n0(d.admits)})</span>`).join(", ") + " " + CAL.monthsShort[+r.cut.slice(5, 7) - 1];
-  const bkRows = X ? bk.sites.map(x => `<tr><td style="${td}">${esc(x.cinema)}${sub(esc(regLabel(x.region)) + " · " + (x.type === "none" ? "tanpa budget DW" : `budget DW habis ${dS(x.from)}`), x.type === "none" ? ORG : RED)}</td>
-<td style="${td};font-size:12px">${days(x)}</td><td style="${td + R}">${n0(x.admits)}</td><td style="${td + R}">${n0(x.dw)}</td><td style="${td + R};font-weight:bold;color:${PUR}">${rpS(x.amount)}</td></tr>`).join("") : "";
+  // 3. bulk booking left out
+  const t3 = X ? tbl(`<tr><th style="${th}">Site</th><th style="${th}">Kondisi</th><th style="${th + R}">Hari</th><th style="${th + R}">Admits</th><th style="${th + R}">MH DW</th><th style="${thX + R}">Amount</th></tr>
+${bk.sites.map(x => `<tr><td style="${td}">${esc(x.cinema)}${small(esc(regLabel(x.region)))}</td><td style="${td};color:${x.type === "none" ? ORG : RED}">${x.type === "none" ? "Tanpa budget DW" : `Budget habis ${dS(x.from)}`}</td>
+<td style="${td + R}">${x.use.length}</td><td style="${td + R}">${n0(x.admits)}</td><td style="${td + R}">${n0(x.dw)}</td><td style="${td + R};font-weight:bold;color:${PUR}">${rpS(x.amount)}</td></tr>`).join("")}
+<tr><td style="${tf}" colspan="2">Total ${bk.tot.sites} site</td><td style="${tf + R}">${bk.sites.reduce((a, x) => a + x.use.length, 0)}</td><td style="${tf + R}">${n0(bk.tot.admits)}</td><td style="${tf + R}">${n0(bk.tot.dw)}</td><td style="${tf + R};color:${PUR}">${rpS(bk.tot.amount)}</td></tr>`) : "";
 
-  return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:860px">
+  return `<div style="${FONT};font-size:14px;color:${INK};line-height:1.5;max-width:800px">
 <p style="margin:0 0 12px">Dear Kak Cinthia,</p>
 <p style="margin:0 0 6px">${paragraph(r, P, true)}</p>
-<!--jpg-->${h2(`1. Pemakaian amount per region · ${M} s.d. ${D}`)}
-${tbl(`<tr><th style="${th}">Region</th><th style="${th + R}">Budget bulan</th><th style="${th + R}">Budget MTD</th><th style="${th + R}">Actual</th>${X ? `<th style="${thX + R}">${XL}</th>` : ""}<th style="${th + R}">Sisa</th></tr>
-${regions.map(o => regRow(o, false)).join("")}${regRow(nat, true)}`)}
-${h2(`2. Site over budget MTD (${over.length}${X ? ` · ${overX} jika bulk booking dikeluarkan` : ""})`)}
-${over.length ? tbl(`<tr><th style="${th}">Site</th><th style="${th + R}">Budget MTD (MH)</th><th style="${th + R}">Actual (MH)</th><th style="${th + R}">Over</th>${X ? `<th style="${thX + R}">Over excl. bulk</th>` : ""}</tr>${ov}`)
-  : `<p style="margin:0;color:${GRN}">Tidak ada site yang over budget MTD.</p>`}
-${X ? h2(`3. Bulk booking di luar budget DW (${bk.tot.sites} site · ${n0(bk.tot.dw)} MH · ${rpS(bk.tot.amount)})`) + tbl(`<tr><th style="${th}">Site</th><th style="${th}">Tanggal (admits nobar)</th><th style="${th + R}">Admits</th><th style="${th + R}">MH DW</th><th style="${thX + R}">Amount</th></tr>${bkRows}
-<tr><td style="${tf}" colspan="2">Total · ${bk.tot.none} site tanpa budget DW, ${bk.tot.habis} site budget DW habis</td><td style="${tf + R}">${n0(bk.tot.admits)}</td><td style="${tf + R}">${n0(bk.tot.dw)}</td><td style="${tf + R};color:${PUR}">${rpS(bk.tot.amount)}</td></tr>`) : ""}
-<p style="font-size:11px;color:${MUT};margin:8px 0 14px">Amount = MH DW × rate tiap site. ${X ? `${XL} = actual dikurangi MH DW di hari bulk booking pada site tanpa budget DW, atau setelah budget DW bulan ini habis. Hari bulk booking &amp; admits nobar = estimasi dari lonjakan admits harian. ` : ""}Detail: <a href="${DASH}" style="color:${BLU}">dashboard Monitoring MH DW</a>.</p>
+<!--jpg-->${h2(`1. Pemakaian per region · ${M} s.d. ${D}`)}${t1}
+${h2(`2. Site melewati budget 1 bulan (${over.length}${X ? ` · ${overX} excl. bulk booking` : ""})`)}${t2}
+${X ? h2(`3. Bulk booking Region 1 &amp; 5 di luar budget DW`) + t3 : ""}
+<p style="font-size:11px;color:${MUT};margin:8px 0 14px">Amount = MH DW × rate tiap site. Budget = budget DW 1 bulan.${X ? ` ${XL} = terpakai total dikurangi MH DW bulk booking Region 1 &amp; 5 pada site tanpa budget DW, atau setelah budget DW-nya habis. Region lain tidak berubah.` : ""} Detail: <a href="${DASH}" style="color:${BLU}">dashboard Monitoring MH DW</a>.</p>
 <!--/jpg--><p style="margin:0 0 12px">Terima kasih.</p>
 <p style="margin:0">Best regards,<br>Ivan</p></div>`;
 }
@@ -105,10 +104,33 @@ ${X ? h2(`3. Bulk booking di luar budget DW (${bk.tot.sites} site · ${n0(bk.tot
 export function mailText(r) {
   const P = pack(r), {N, regions, over} = P, X = N.ex > 0, bk = r.bulk;
   return ["Dear Kak Cinthia,", "", paragraph(r, P, false), "",
-    "1. Per region (actual" + (X ? " / excl. bulk booking" : "") + " vs budget MTD):",
-    ...regions.map(o => `${regLabel(o.region)}: ${rpS(o.ac)} (${vs(o.ac, o.bt)})` + (X ? ` / ${rpS(o.acX)} (${vs(o.acX, o.bt)})` : "") + ` · budget MTD ${rpS(o.bt)}`), "",
-    `2. Site over budget MTD (${over.length}):`, ...(over.length ? over.map(x => `${x.cinema}: over ${rpS(x.overRp)}` + (X ? ` · excl. bulk ${x.overMhX > 0.5 ? rpS(x.overRpX) : "aman"}` : "")) : ["Tidak ada."]), "",
-    ...(X ? [`3. Bulk booking di luar budget DW (${bk.tot.sites} site, ${n0(bk.tot.dw)} MH, ${rpS(bk.tot.amount)}):`,
-      ...bk.sites.map(x => `${x.cinema} (${x.type === "none" ? "tanpa budget DW" : "budget DW habis " + dS(x.from)}): ${x.use.map(d => `${dS(d.iso)} ${n0(d.admits)} adm`).join(", ")} · ${n0(x.dw)} MH · ${rpS(x.amount)}`), ""] : []),
-    `Detail: ${DASH}`, "", "Terima kasih.", "", "Best regards,", "Ivan"].join("\n");
+    "1. Per region (budget / terpakai total" + (X ? " / excl. bulk booking" : "") + " / sisa):",
+    ...regions.map(o => `${regLabel(o.region)}: ${rpS(o.bm)} / ${rpS(o.ac)}` + (X ? ` / ${o.ex ? rpS(o.acX) : "sama"}` : "") + ` / ${rpS(o.bm - o.ac)}`),
+    `Total: ${rpS(N.bm)} / ${rpS(N.ac)}` + (X ? ` / ${rpS(N.acX)}` : "") + ` / ${rpS(N.bm - N.ac)}`, "",
+    `2. Site melewati budget 1 bulan (${over.length}):`, ...(over.length ? over.map(x => `${x.cinema}: ${n0(x.actual)} vs ${x.budgetMonth ? n0(x.budgetMonth) : "tanpa budget"} MH (+${n0(x.overMh)})` + (X && x.ex ? ` · excl. bulk ${x.overMhX > 0.5 ? "+" + n0(x.overMhX) + " MH" : "aman"}` : "")) : ["Tidak ada."]), "",
+    ...(X ? ["3. Bulk booking Region 1 & 5 di luar budget DW:", ...bk.sites.map(x => `${x.cinema} (${x.type === "none" ? "tanpa budget DW" : "budget habis " + dS(x.from)}): ${x.use.length} hari, ${n0(x.admits)} admits, ${n0(x.dw)} MH, ${rpS(x.amount)}`), ""] : []),
+    "Rincian per site: lampiran Excel.", `Detail: ${DASH}`, "", "Terima kasih.", "", "Best regards,", "Ivan"].join("\n");
+}
+
+/** Excel attachment: sheets as array-of-arrays + column widths. Clean: one title line, one header row, one total row. */
+export function attachment(r) {
+  const P = pack(r), {N, site} = P, bk = r.bulk, M = monthId(r.month), D = dS(r.cut);
+  const rd = v => Math.round(v || 0), r1 = v => Math.round((v || 0) * 10) / 10;
+  const regNo = x => parseInt(String(x.region).replace(/\D/g, ""), 10) || 99;
+  const rows = site.slice().sort((a, b) => regNo(a) - regNo(b) || +a.code - +b.code);
+  const ket = x => { const b = bk && bk.sites.find(y => y.code === x.code);
+    return [!x.budgetMonth && x.actual ? "Tanpa budget DW" : x.overMh > 0.5 ? "Melewati budget" : "", b ? (b.type === "none" ? "bulk booking" : `bulk booking setelah budget habis ${dS(b.from)}`) : ""].filter(Boolean).join(" · "); };
+  const s1 = [[`Pemakaian MH DW ${M} s.d. ${D} vs budget 1 bulan`], [],
+    ["Region", "Site", "Budget (MH)", "Terpakai total (MH)", "Bulk booking (MH)", "Terpakai excl. bulk (MH)", "Sisa excl. bulk (MH)", "Budget (Rp)", "Terpakai total (Rp)", "Bulk booking (Rp)", "Terpakai excl. bulk (Rp)", "Sisa excl. bulk (Rp)", "Keterangan"],
+    ...rows.map(x => [regLabel(x.region), x.cinema, r1(x.budgetMonth), r1(x.actual), r1(x.exMh), r1(x.mhX), r1(x.budgetMonth - x.mhX), rd(x.bm), rd(x.ac), rd(x.ex), rd(x.acX), rd(x.bm - x.acX), ket(x)]),
+    ["TOTAL", `${rows.length} site`, r1(N.mhB), r1(N.mhA), r1(N.exMh), r1(N.mhA - N.exMh), r1(N.mhB - N.mhA + N.exMh), rd(N.bm), rd(N.ac), rd(N.ex), rd(N.acX), rd(N.bm - N.acX), ""]];
+  const sheets = [{name: "Per Site", aoa: s1, cols: [11, 34, 12, 18, 17, 22, 19, 14, 18, 17, 22, 19, 40]}];
+  if (bk && bk.sites.length) {
+    const days = bk.sites.flatMap(x => x.use.map(d => ({x, d}))).sort((p, q) => regNo(p.x) - regNo(q.x) || +p.x.code - +q.x.code || p.d.iso.localeCompare(q.d.iso));
+    sheets.push({name: "Bulk Booking R1 & R5", cols: [11, 34, 24, 12, 16, 10, 14], aoa: [[`Bulk booking Region 1 & 5 di luar budget DW · ${M} s.d. ${D}`], [],
+      ["Region", "Site", "Kondisi", "Tanggal", "Admits nobar", "MH DW", "Amount (Rp)"],
+      ...days.map(({x, d}) => [regLabel(x.region), x.cinema, x.type === "none" ? "Tanpa budget DW" : `Budget habis ${dS(x.from)}`, d.iso, rd(d.admits), r1(d.dw), rd(d.dw * (x.amount / (x.dw || 1)))]),
+      ["TOTAL", `${bk.tot.sites} site`, "", `${days.length} hari`, rd(bk.tot.admits), r1(bk.tot.dw), rd(bk.tot.amount)]]});
+  }
+  return {sheets, filename: `MH_DW_${M}_sd_${r.cut}_lampiran.xlsx`};
 }

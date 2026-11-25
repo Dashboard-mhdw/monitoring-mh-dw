@@ -240,7 +240,7 @@ export default {
       <p class="foot">${t("budget.footNew")} ${r.source ? t("budget.source", {s: esc(r.source)}) : ""}${r.pendingTransfers ? " " + t("budget.trPending", {n: r.pendingTransfers}) : ""}</p>
       ${transferSection(r, key)}
       ${!admin ? "" : `<div class="row" style="margin-top:var(--s4)"><h2 class="section-head" style="margin:0">${t("budget.mailTitle")}</h2><span class="spacer"></span>
-        ${btn(t("budget.copySubject"), {id: "bmSubj", icon: ICON.copy})}${btn(t("budget.downloadJpg"), {id: "bmJpg", icon: ICON.down})}${btn(t("budget.copyMail"), {id: "bmCopy", filled: true, icon: ICON.copy})}</div>
+        ${btn(t("budget.copySubject"), {id: "bmSubj", icon: ICON.copy})}${btn(t("budget.downloadJpg"), {id: "bmJpg", icon: ICON.down})}${btn(t("budget.mailXlsx"), {act: "budget-mail-xlsx", icon: ICON.down})}${btn(t("budget.copyMail"), {id: "bmCopy", filled: true, icon: ICON.copy})}</div>
       <p class="foot" style="margin-top:-8px">${t("budget.mailNote")}</p>
       <div class="mail-paper"><p style="font-family:Arial;font-size:13px;color:#555;margin:0 0 12px"><b>Subject:</b> ${esc(Mail.subject(r))}</p>${Mail.mailHTML(r)}</div>
       ${rmRegs.length ? `<div class="row" style="margin-top:var(--s6)"><h2 class="section-head" style="margin:0">${t("budget.rmTitle")}</h2><span class="spacer"></span>
