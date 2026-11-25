@@ -131,8 +131,30 @@ export function budgetVsActual(key, cut, transfers) {
   b = withAdmitsPL(withTransfers(b, key, transfers), BUDGET.admitsPL && BUDGET.admitsPL[key]);
   const m = codes ? {...g.m, rows: g.m.rows.filter(r => codes.has(r.code))} : g.m;
   const r = Core.budgetVsActual(m, b, cut);
-  if (r) enrichAmounts(r, b);
+  if (r) { enrichAmounts(r, b); r.nobar = nobarNonBudget(key, r.cut, b, codes); }
   return r;
+}
+
+/** Bulk booking / nobar at sites WITHOUT a nobar forecast in the budget ("Forecast Nobar" = 0), up to the cut-off.
+ *  Estimated from daily admits (Core.bulkDays); a CM reason with category "nobar" on that date marks it confirmed later in the view. */
+function nobarNonBudget(key, cut, b, codes) {
+  if (!cut) return null;
+  const S = b.sites || {}, T = (TARGETS && TARGETS.sites) || {};
+  const ev = Core.bulkDays(k => { const g = getMonth(k); return g ? g.m : null; }, key, cut)
+    .filter(e => (!codes || codes.has(e.code)) && !((S[e.code] || {}).nobar > 0));
+  const by = new Map();
+  ev.forEach(e => {
+    if (!by.has(e.code)) { const s = S[e.code] || {};
+      by.set(e.code, {code: e.code, cinema: e.cinema, region: (T[e.code] && T[e.code].region) || s.region || "", rate: s.rate || 0, budgetMH: s.mhMonth || 0, days: []}); }
+    by.get(e.code).days.push(e);
+  });
+  const sites = [...by.values()].map(x => {
+    const sum = k => x.days.reduce((a, d) => a + d[k], 0);
+    return {...x, n: x.days.length, admits: sum("admits"), nobar: sum("nobar"), dw: sum("dw"), dwExtra: sum("dwExtra"), amount: sum("dw") * x.rate, amountExtra: sum("dwExtra") * x.rate};
+  }).sort((p, q) => q.nobar - p.nobar);
+  const sum = k => sites.reduce((a, x) => a + x[k], 0);
+  return {month: key, cut, sites, tot: {sites: sites.length, days: sum("n"), nobar: sum("nobar"), dw: sum("dw"), dwExtra: sum("dwExtra"), amount: sum("amount"), amountExtra: sum("amountExtra")},
+    budgetedSites: Object.values(S).filter(s => s && s.nobar > 0).length};
 }
 
 /** Add Rupiah, FT, rate and region to a budget-vs-actual result (rate = Rp per MH DW from the budget sheet). */

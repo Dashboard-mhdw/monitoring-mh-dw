@@ -260,6 +260,39 @@
     return {month:m.key, cut, hasAdmits, periods:byPeriod, rows, tot, overFlexSites: rows.filter(r => r.overFlex > 0.5).length, counts:{over:count("over"), nobudget:count("nobudget"), early:count("early"), near:count("near"), ok:count("ok"), none:count("none")}};
   }
 
-  const api = {num, tabKey, parseMonth, pack, unpack, stats, pad, isoAdd, siteDays, prodAlerts, budgetVsActual};
+  /* Bulk booking / nobar detection (the sheet has no nobar column, so it is estimated from admits).
+   *   history  = this month + up to 2 months before (getMonth(key) -> unpacked month or null)
+   *   f[d]     = national day factor: median over sites of admits(d) / site's median admits  (removes holidays / big releases)
+   *   normal   = site's median of admits/f on the same weekday over the history (keeps weekly promo days like Tuesday normal)
+   *   flagged  = admits ≥ minX × expected  and  admits − expected ≥ minExtra, where expected = normal × f[d]
+   * Returns one row per site per flagged day: admits, expected, nobar (= admits − expected), DW that day and DW above the weekday norm. */
+  function bulkDays(getMonth, key, cutIso, opt){
+    opt = Object.assign({minX:1.6, minExtra:300, back:2}, opt||{});
+    const [y,mo] = key.split("-").map(Number);
+    const keys = []; for(let i=opt.back;i>=0;i--){ const t = new Date(Date.UTC(y, mo-1-i, 1)); keys.push(t.getUTCFullYear()+"-"+pad(t.getUTCMonth()+1)); }
+    const S = new Map(), isos = new Set();
+    keys.forEach(k => { const m = getMonth(k); if(!m) return;
+      m.rows.forEach(r => { let s = S.get(r.code); if(!s){ s = {code:r.code, cinema:r.cinema, a:{}, dw:{}}; S.set(r.code, s); } if(k===key) s.cinema = r.cinema;
+        r.days.forEach((x,i) => { const iso = m.dates[i].iso; if(iso > cutIso) return; isos.add(iso);
+          if(x.admits!=null) s.a[iso] = (s.a[iso]||0) + x.admits; s.dw[iso] = (s.dw[iso]||0) + (x.pkdw||0); }); }); });
+    const med = arr => { const v = arr.filter(x => x > 0).sort((p,q) => p-q); return v.length ? v[Math.floor(v.length/2)] : 0; };
+    const sites = [...S.values()]; sites.forEach(s => s.med = med(Object.values(s.a)));
+    const f = {}; isos.forEach(d => { f[d] = med(sites.filter(s => s.med && s.a[d] > 0).map(s => s.a[d] / s.med)) || 1; });
+    const wd = iso => new Date(iso+"T00:00:00Z").getUTCDay();
+    const out = [];
+    sites.forEach(s => {
+      const days = Object.keys(s.a).filter(d => s.a[d] > 0);
+      const norm = {}, dwN = {};
+      for(let w=0; w<7; w++){ const ds = days.filter(d => wd(d)===w); norm[w] = med(ds.map(d => s.a[d] / f[d])); dwN[w] = med(ds.map(d => s.dw[d]||0)); }
+      days.filter(d => d.slice(0,7)===key).sort().forEach(d => {
+        const w = wd(d), exp = (norm[w] || s.med) * f[d], a = s.a[d];
+        if(a >= opt.minX * exp && a - exp >= opt.minExtra)
+          out.push({code:s.code, cinema:s.cinema, iso:d, admits:a, expected:Math.round(exp), nobar:Math.round(a - exp), dw:s.dw[d]||0, dwNormal:dwN[w]||0, dwExtra:Math.max(0, (s.dw[d]||0) - (dwN[w]||0))});
+      });
+    });
+    return out;
+  }
+
+  const api = {num, tabKey, parseMonth, pack, unpack, stats, pad, isoAdd, siteDays, prodAlerts, budgetVsActual, bulkDays};
   if(typeof module !== "undefined" && module.exports) module.exports = api; else root.MHCore = api;
 })(typeof window !== "undefined" ? window : globalThis);
